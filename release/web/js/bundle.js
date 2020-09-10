@@ -9,6 +9,7 @@
             this.strType = "hello laya";
             this.boolType = true;
             this._offset = 50;
+            this._curRotation = 0;
         }
         onEnable() {
             console.log("enable script");
@@ -39,6 +40,10 @@
             this.initItems();
             this.drawCircle(300, 200, 50, 60);
             this.drawCircleEx(800, 400, 40, 60, 0);
+            let targetRotation = Math.atan2(200 - 100, 100 - 200) * 180 / Math.PI;
+            console.log("target r " + targetRotation);
+            targetRotation = Math.atan2(100 - 200, 100 - 200) * 180 / Math.PI;
+            console.log("target r " + targetRotation);
         }
         initItems() {
             let colorList = this.gradientColors("#ff0000", "#0000ff", 100);
@@ -62,24 +67,16 @@
             this.lastMousePosX = Laya.stage.mouseX;
             this.lastMousePosY = Laya.stage.mouseY;
             this._sp.rotation = Math.atan2(this.lastMousePosY - this._bubbleSp.y, this.lastMousePosX - this._bubbleSp.x) * 180 / Math.PI;
+            this._curRotation = this._sp.rotation;
             Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.onTouchMove);
             Laya.timer.loop(30, this, this.onBallMove);
         }
         onTouchMove() {
             this.curMouseX = Laya.stage.mouseX;
             this.curMouseY = Laya.stage.mouseY;
-            let rotation = Math.atan2(this.curMouseY - this.lastMousePosY, this.curMouseX - this.lastMousePosX);
-            let delta = rotation * 180 / Math.PI;
-            if (delta > 90) {
-                delta = delta - 90;
-            }
-            if (delta < -90) {
-                delta = delta + 90;
-            }
-            console.log("delta " + delta);
-            this._sp.rotation += delta * 0.05;
-            this.lastMousePosX = this.curMouseX;
-            this.lastMousePosY = this.curMouseY;
+            let targetRotation = Math.atan2(this.curMouseY - this.lastMousePosY, this.curMouseX - this.lastMousePosX) * 180 / Math.PI;
+            let targetR = Math.floor(targetRotation);
+            this._sp.rotation = targetR;
         }
         onTouchUp() {
             Laya.stage.off(Laya.Event.MOUSE_MOVE, this, this.onTouchMove);
@@ -109,7 +106,7 @@
             this.drawMove(25, 25, 25, 0);
         }
         onBallMove() {
-            var speed = 4;
+            var speed = 5;
             var radians = this._sp.rotation * Math.PI / 180;
             var xOffset = Math.cos(radians) * speed;
             var yOffset = Math.sin(radians) * speed;
@@ -119,7 +116,6 @@
             for (let item in this._itemList) {
                 let sp = this._itemList[item];
                 if (this.powDistance(this._bubbleSp.x, this._bubbleSp.y, sp.x, sp.y) <= Math.pow(sp.width / 2 + this._sp.width / 2 + 5, 2)) {
-                    console.log("吃小球");
                     delList.push(sp);
                     sp.removeSelf();
                     this.playScaleAnim();
