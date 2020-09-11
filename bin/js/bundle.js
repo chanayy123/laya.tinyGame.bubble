@@ -34,7 +34,7 @@
             }), "res/atlas/chat/emoji.atlas");
             this._anim.autoPlay = true;
             this._bubbleSp.addChild(this._anim);
-            this.drawMove(25, 25, 25, 0);
+            this.drawMove(25, 25, 25, 50);
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
             Laya.stage.on(Laya.Event.MOUSE_UP, this, this.onTouchUp);
             this.initItems();
@@ -44,6 +44,7 @@
             console.log("target r " + targetRotation);
             targetRotation = Math.atan2(100 - 200, 100 - 200) * 180 / Math.PI;
             console.log("target r " + targetRotation);
+            this._sp.rotation = 348;
         }
         initItems() {
             let colorList = this.gradientColors("#ff0000", "#0000ff", 100);
@@ -75,8 +76,13 @@
             this.curMouseX = Laya.stage.mouseX;
             this.curMouseY = Laya.stage.mouseY;
             let targetRotation = Math.atan2(this.curMouseY - this.lastMousePosY, this.curMouseX - this.lastMousePosX) * 180 / Math.PI;
-            let targetR = Math.floor(targetRotation);
-            this._sp.rotation = targetR;
+            if (Math.abs(targetRotation - this._sp.rotation) > 10 && Math.abs(targetRotation - this._sp.rotation) < 90) {
+                let tmp = targetRotation;
+                targetRotation = targetRotation > this._sp.rotation ? this._sp.rotation + 10 : this._sp.rotation - 10;
+            }
+            this._sp.rotation = targetRotation;
+            this.lastMousePosX = this.curMouseX;
+            this.lastMousePosY = this.curMouseY;
         }
         onTouchUp() {
             Laya.stage.off(Laya.Event.MOUSE_MOVE, this, this.onTouchMove);
@@ -338,7 +344,7 @@
                 Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
             Laya["Physics"] && Laya["Physics"].enable();
             Laya["DebugPanel"] && Laya["DebugPanel"].enable();
-            Laya.stage.scaleMode = GameConfig.scaleMode;
+            Laya.stage.scaleMode = Laya.Stage.SCALE_FIXED_AUTO;
             Laya.stage.screenMode = GameConfig.screenMode;
             Laya.stage.alignV = GameConfig.alignV;
             Laya.stage.alignH = GameConfig.alignH;

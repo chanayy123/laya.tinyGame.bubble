@@ -52,7 +52,7 @@ export default class test extends Laya.Script {
         // anim.autoPlay=true;
         // Laya.stage.addChild(anim); 
 
-        this.drawMove(25,25,25,0);
+        this.drawMove(25,25,25,50);
         Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.onTouchDown);
         Laya.stage.on(Laya.Event.MOUSE_UP,this,this.onTouchUp);
         this.initItems();
@@ -63,6 +63,7 @@ export default class test extends Laya.Script {
         console.log("target r "+targetRotation)
         targetRotation = Math.atan2(100-200,100-200)*180/Math.PI;
         console.log("target r "+targetRotation)
+        this._sp.rotation = 348;
     }
 
     initItems(){
@@ -102,9 +103,19 @@ export default class test extends Laya.Script {
         this.curMouseX = Laya.stage.mouseX;
         this.curMouseY = Laya.stage.mouseY;
         let targetRotation = Math.atan2(this.curMouseY-this.lastMousePosY,this.curMouseX-this.lastMousePosX)*180/Math.PI;
-        //console.log("targetRotation "+targetRotation);
-        let targetR = Math.floor(targetRotation);
-        this._sp.rotation = targetR;
+        // console.log("targetRotation "+targetRotation);
+        //let targetR = Math.floor(targetRotation*10)*0.1;
+        //console.log("targetR "+targetR);
+        // let targetR2 = Math.floor(targetRotation);
+        // console.log("targetR2 "+targetR2);
+        //targetRotation = targetRotation<0?targetRotation+360:targetRotation;
+        //console.log("targetRotation "+targetRotation)
+        if(Math.abs(targetRotation-this._sp.rotation)>10 && Math.abs(targetRotation-this._sp.rotation) <90){
+            let tmp = targetRotation;
+            targetRotation = targetRotation>this._sp.rotation?this._sp.rotation+10:this._sp.rotation-10;
+            // console.log(`修正旋转值: ${tmp}=>${targetRotation}`)
+        }
+        this._sp.rotation = targetRotation;//targetRotation-this._sp.rotation<10? targetRotation : this._sp.rotation+10;
         // if(targetRotation != 0){
         //     let delta = targetRotation-this._curRotation;
         //     this._curRotation += delta*0.5;
@@ -113,8 +124,8 @@ export default class test extends Laya.Script {
         // }
 
         // console.log(this._sp.rotation)
-        //this.lastMousePosX =this.curMouseX;
-        //this.lastMousePosY = this.curMouseY;
+        this.lastMousePosX =this.curMouseX;
+        this.lastMousePosY = this.curMouseY;
     }
 
     onTouchUp(){
