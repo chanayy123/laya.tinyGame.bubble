@@ -75,12 +75,14 @@
         onTouchMove() {
             this.curMouseX = Laya.stage.mouseX;
             this.curMouseY = Laya.stage.mouseY;
-            let targetRotation = Math.atan2(this.curMouseY - this.lastMousePosY, this.curMouseX - this.lastMousePosX) * 180 / Math.PI;
-            if (Math.abs(targetRotation - this._sp.rotation) > 10 && Math.abs(targetRotation - this._sp.rotation) < 90) {
-                let tmp = targetRotation;
-                targetRotation = targetRotation > this._sp.rotation ? this._sp.rotation + 10 : this._sp.rotation - 10;
-            }
-            this._sp.rotation = targetRotation;
+            let deltaX = this.curMouseX - this.lastMousePosX;
+            let deltaY = this.curMouseY - this.lastMousePosY;
+            let len = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
+            if (len <= Math.pow(8, 2))
+                return;
+            let targetRotation = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            let targetR = Math.floor(targetRotation * 10) * 0.1;
+            this._sp.rotation = targetR;
             this.lastMousePosX = this.curMouseX;
             this.lastMousePosY = this.curMouseY;
         }

@@ -102,20 +102,27 @@ export default class test extends Laya.Script {
     onTouchMove(){
         this.curMouseX = Laya.stage.mouseX;
         this.curMouseY = Laya.stage.mouseY;
-        let targetRotation = Math.atan2(this.curMouseY-this.lastMousePosY,this.curMouseX-this.lastMousePosX)*180/Math.PI;
+        let deltaX =this.curMouseX-this.lastMousePosX;
+        let deltaY = this.curMouseY-this.lastMousePosY;
+        let len = Math.pow(deltaX,2)+Math.pow(deltaY,2);
+        //console.log("滑动距离: "+Math.sqrt(len));       
+        if(len<= Math.pow(8,2)) return;
+        let targetRotation = Math.atan2(deltaY,deltaX)*180/Math.PI;
         // console.log("targetRotation "+targetRotation);
-        //let targetR = Math.floor(targetRotation*10)*0.1;
+        let targetR = Math.floor(targetRotation*10)*0.1;
         //console.log("targetR "+targetR);
         // let targetR2 = Math.floor(targetRotation);
         // console.log("targetR2 "+targetR2);
         //targetRotation = targetRotation<0?targetRotation+360:targetRotation;
         //console.log("targetRotation "+targetRotation)
-        if(Math.abs(targetRotation-this._sp.rotation)>10 && Math.abs(targetRotation-this._sp.rotation) <90){
-            let tmp = targetRotation;
-            targetRotation = targetRotation>this._sp.rotation?this._sp.rotation+10:this._sp.rotation-10;
-            // console.log(`修正旋转值: ${tmp}=>${targetRotation}`)
-        }
-        this._sp.rotation = targetRotation;//targetRotation-this._sp.rotation<10? targetRotation : this._sp.rotation+10;
+
+        // if(Math.abs(targetRotation-this._sp.rotation)>10 && Math.abs(targetRotation-this._sp.rotation) <90){
+        //     let tmp = targetRotation;
+        //     targetRotation = targetRotation>this._sp.rotation?this._sp.rotation+10:this._sp.rotation-10;
+        //     // console.log(`修正旋转值: ${tmp}=>${targetRotation}`)
+        // }
+
+        this._sp.rotation = targetR;//targetRotation-this._sp.rotation<10? targetRotation : this._sp.rotation+10;
         // if(targetRotation != 0){
         //     let delta = targetRotation-this._curRotation;
         //     this._curRotation += delta*0.5;
