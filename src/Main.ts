@@ -1,4 +1,5 @@
 import GameConfig from "./GameConfig";
+import GameControl from "./GameControl";
 class Main {
 	constructor() {
 		Config.isAntialias=true;
@@ -7,7 +8,7 @@ class Main {
 		else Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
 		Laya["Physics"] && Laya["Physics"].enable();
 		Laya["DebugPanel"] && Laya["DebugPanel"].enable();
-		Laya.stage.scaleMode = 	Laya.Stage.SCALE_FIXED_AUTO;
+		Laya.stage.scaleMode = 	GameConfig.scaleMode;
 		Laya.stage.screenMode = GameConfig.screenMode;
 		Laya.stage.alignV = GameConfig.alignV;
 		Laya.stage.alignH = GameConfig.alignH;
@@ -20,7 +21,6 @@ class Main {
 		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
 		if (GameConfig.stat) Laya.Stat.show();
 		Laya.alertGlobalError(true);
-
 		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
 		Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}

@@ -1,3 +1,5 @@
+import { GameUtil } from "./GameUtil";
+
 export default class test extends Laya.Script {
     /** @prop {name:intType, tips:"整数类型示例", type:Int, default:1000}*/
     public intType: number = 1000;
@@ -35,14 +37,14 @@ export default class test extends Laya.Script {
         this._anim.loadAnimation("chat/anim/emoji_1.ani",Laya.Handler.create(this,()=>{
             let bound = this._anim.getGraphicBounds();
             //this._anim.size(165,165);
+            this._bubbleSp.addChild(this._anim); 
             this._anim.pivot(bound.x+bound.width/2,bound.y+bound.height/2)
             let scale = Math.min(50/bound.width,50/bound.height);
             this._anim.scale(0.3,0.3);
             this._anim.pos(25,25);
+            this._anim.autoPlay=true;
             //this._anim.graphics.drawCircle(bound.width/2,bound.height/2,bound.height/2,'#0000ff');
         }),"res/atlas/chat/emoji.atlas"); 
-        this._anim.autoPlay=true;
-        this._bubbleSp.addChild(this._anim); 
 
         // let anim = new Laya.Animation();
         // anim.loadAnimation("chat/anim/emoji_1.ani",Laya.Handler.create(this,()=>{
@@ -59,11 +61,8 @@ export default class test extends Laya.Script {
         this.drawCircle(300,200,50,60);
         this.drawCircleEx(800,400,40,60,0);
 
-        let targetRotation = Math.atan2(200-100,100-200)*180/Math.PI;
-        console.log("target r "+targetRotation)
-        targetRotation = Math.atan2(100-200,100-200)*180/Math.PI;
-        console.log("target r "+targetRotation)
-        this._sp.rotation = 348;
+        // GameUtil.tween();
+
     }
 
     initItems(){
@@ -81,7 +80,6 @@ export default class test extends Laya.Script {
             this._itemList.push(sp);
             sp.pos(x,y);
             Laya.stage.addChild(sp);
-
         }
     }
 
@@ -105,7 +103,8 @@ export default class test extends Laya.Script {
         let deltaX =this.curMouseX-this.lastMousePosX;
         let deltaY = this.curMouseY-this.lastMousePosY;
         let len = Math.pow(deltaX,2)+Math.pow(deltaY,2);
-        //console.log("滑动距离: "+Math.sqrt(len));       
+        //console.log("滑动距离: "+Math.sqrt(len));      
+        //为了防止抖动:设置距离阀门,小于设定值的直接忽略 
         if(len<= Math.pow(8,2)) return;
         let targetRotation = Math.atan2(deltaY,deltaX)*180/Math.PI;
         // console.log("targetRotation "+targetRotation);
@@ -341,6 +340,7 @@ export default class test extends Laya.Script {
             point = point.next;
             theta = twoPi * point.x + phase;
             rad = minRad + point.y * (maxRad - minRad);
+            //console.log("x y "+point.x+" "+point.y)
             let x = centerX + rad * Math.cos(theta)-x0;
             let y = centerY + rad * Math.sin(theta)-y0;
             ptList.push(x);
