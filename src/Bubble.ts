@@ -6,8 +6,8 @@ export default class Bubble extends Laya.Sprite{
     public static TransformTime = 250;
     public static AddCircleByLevels = 10;
     public static AddLevelByBeans=1;
-    public static AddSizeByCircle=5;
-    public static AddSizeByLevel=2;
+    public static AddSizeByCircle=2;
+    public static AddSizeByLevel=1;
     public static InitSize=50;
     private _shapeSp:Laya.Sprite;
     //移动形状顶点列表
@@ -35,6 +35,7 @@ export default class Bubble extends Laya.Sprite{
     private _transformHandler:Laya.Handler;
     private _level:number;
     private _eatBeans:number;
+    private _starShapeSp:Laya.Sprite;
     
     constructor(){
         super();
@@ -43,6 +44,7 @@ export default class Bubble extends Laya.Sprite{
     init(size:number,skin:number,isAI:boolean){
         this._shapeSp =  this._shapeSp || new Laya.Sprite();
         this.addChild(this._shapeSp);
+        this.initStar(skin);
         this._initBubbleSize = size;
         this._visionRange = size;
         this._skinIndex =skin;
@@ -52,42 +54,71 @@ export default class Bubble extends Laya.Sprite{
         this.State = BubbleState.NORMAL;
     }
 
+    initStar(skinIdx:number){
+        this._starShapeSp = this._starShapeSp || new Laya.Sprite();
+        let size = 260;
+        let halfSize = size/2;
+        let path= [];
+        path.push(0, -130);//五角星A点坐标
+        path.push(33, -33);//五角星B点坐标
+        path.push(130, -30);//五角星C点坐标
+        path.push(55, 32);//五角星D点坐标
+        path.push(85, 130);//五角星E点坐标
+        path.push(0, 73);//五角星F点坐标
+        path.push(-85, 130);//五角星G点坐标
+        path.push(-55, 32);//五角星H点坐标
+        path.push(-130, -30);//五角星I点坐标
+        path.push(-33, -33);//五角星J点坐标
+        this._starShapeSp.graphics.clear();
+        this._starShapeSp.size(size,size);
+        this._starShapeSp.pivot(halfSize,halfSize+10);
+        let idx = (skinIdx+1)%Bubble.SKIN_LIST.length;
+        this._starShapeSp.graphics.drawPoly(halfSize,halfSize,path,Bubble.SKIN_LIST[2]);
+    }
+
+    showStar(centerX,centerY,size){
+        this.addChild(this._starShapeSp);
+        this._starShapeSp.pos(centerX,centerY);
+        this._starShapeSp.scale(size/320,size/320);
+    }
+
     private updateShape(size:number,deltaSize:number){
         let radius = size/2;
         if(this._normalShape == null){
-            this._normalShape = new BubbleShape();
+            this._normalShape = new BubbleShape(BubbleState.NORMAL,radius,radius,radius);
             [this._normalShape.startX,this._normalShape.startY,this._normalShape.ptList] = GameUtil.MakeRegularBubble(radius,radius,radius);
         }else if(this.State == BubbleState.NORMAL){
             //为了保持原形状居中,新尺寸下需要重新绘制
             this._normalShape.startX += deltaSize/2;
             this._normalShape.startY += deltaSize/2;
             this.draw(this._normalShape);
-            let newShape = new BubbleShape();
-            // GameUtil.MakeRRBubble(radius,radius,radius-deltaSize/2,radius) 
-            // GameUtil.MakeIrregularBubble(radius,radius,radius-deltaSize,radius,-Math.PI*2/3) 
+            let oldShape = this._normalShape;
+            let newShape = new BubbleShape(BubbleState.NORMAL,radius,radius,radius);
             [newShape.startX,newShape.startY,newShape.ptList] = GameUtil.MakeRegularBubble(radius,radius,radius);
-            this.checkTransformShape(this._normalShape,newShape,Bubble.TransformTime,Laya.Ease.bounceOut,true);
-            // newShape = new BubbleShape();
-            // [newShape.startX,newShape.startY,newShape.ptList] = GameUtil.MakeRegularBubble(radius,radius,radius) //GameUtil.MakeRegularBubble(radius,radius,radius);
-            // this.checkTransformShape(this._normalShape,newShape,Bubble.TransformTime,Laya.Ease.bounceOut,true);
-            //同时更新其他形状
+            this.checkTransformShape(oldShape,newShape,Bubble.TransformTime,this.getEaseFun(this.State,this.State));
+            //不用等动画完成,直接更新形状数据
+            this._normalShape = newShape;
+            this._moveShape.centerX = this._moveShape.centerY = this._moveShape.radius = radius;
             [this._moveShape.startX,this._moveShape.startY,this._moveShape.ptList] = GameUtil.MakeBezierBubble(radius,radius,radius);
         }
         if(this._moveShape == null){
-            this._moveShape =  new BubbleShape();
+            this._moveShape =  new BubbleShape(BubbleState.MOVE,radius,radius,radius);
             [this._moveShape.startX,this._moveShape.startY,this._moveShape.ptList] = GameUtil.MakeBezierBubble(radius,radius,radius) //GameUtil.MakeBezierBubble(radius,radius,radius);
         }else if(this.State == BubbleState.MOVE){
             //为了保持原形状居中,新尺寸下需要重新绘制
             this._moveShape.startX += deltaSize/2;
             this._moveShape.startY += deltaSize/2;
             this.draw(this._moveShape);
-            let newShape = new BubbleShape();
+            let oldShape = this._moveShape;
+            let newShape = new BubbleShape(BubbleState.MOVE,radius,radius,radius);
             [newShape.startX,newShape.startY,newShape.ptList] = GameUtil.MakeBezierBubble(radius,radius,radius);
-            this.checkTransformShape(this._moveShape,newShape,Bubble.TransformTime,Laya.Ease.backOut,true);
-            //同时更新其他形状
+            this.checkTransformShape(oldShape,newShape,Bubble.TransformTime,this.getEaseFun(this.State,this.State));
+            //不用等动画完成,直接更新形状数据
+            this._moveShape = newShape;
+            this._normalShape.centerX = this._normalShape.centerY = this._normalShape.radius = radius;
             [this._normalShape.startX,this._normalShape.startY,this._normalShape.ptList] = GameUtil.MakeRegularBubble(radius,radius,radius);
         }
-        this._tmpShape = this._tmpShape || new BubbleShape();
+        this._tmpShape = this._tmpShape || new BubbleShape(BubbleState.TMP,radius,radius,radius);
     }
 
     public set bubbleSize(value:number){
@@ -149,16 +180,20 @@ export default class Bubble extends Laya.Sprite{
         this._shapeSp.graphics.clear();
         let circleNums = this.circleNums;
         let outerColorIdx = (this._skinIndex+circleNums)%Bubble.SKIN_LIST.length;
-        this._shapeSp.graphics.drawPoly(shape.startX,shape.startY,shape.ptList,Bubble.SKIN_LIST[outerColorIdx]);
-        for(let i=circleNums-1;i>=0;--i){
-            let size = this.getSizeByCircleNum(i);
-            let colorIdx = (this._skinIndex+i)%Bubble.SKIN_LIST.length;
-            this._shapeSp.graphics.drawCircle(this.bubbleSize/2,this.bubbleSize/2,size/2,Bubble.SKIN_LIST[colorIdx]);
+        let lineColorIdx = (this._skinIndex+1+circleNums)%Bubble.SKIN_LIST.length;
+        this._shapeSp.graphics.drawPoly(shape.startX,shape.startY,shape.ptList,Bubble.SKIN_LIST[outerColorIdx],Bubble.SKIN_LIST[lineColorIdx],3);
+        if(circleNums >= 1){
+            for(let i=circleNums-1;i>=0;--i){
+                let size = this.getSizeByCircleNum(i);
+                let colorIdx = (this._skinIndex+i)%Bubble.SKIN_LIST.length;
+                this._shapeSp.graphics.drawCircle(this.bubbleSize/2,this.bubbleSize/2,size/2,Bubble.SKIN_LIST[colorIdx]);
+                if(i == 0){
+                    this.showStar(this.bubbleSize/2,this.bubbleSize/2,size);
+                }
+            }
+        }else{
+            this.showStar(this._normalShape.centerX,this._normalShape.centerY,this._normalShape.radius*2);
         }
-        //let pt1 = this._shapeSp.localToGlobal(new Laya.Point(this.bubbleSize/2,this.bubbleSize/2));
-        //let pt2 = this.localToGlobal(new Laya.Point(this.bubbleSize/2,this.bubbleSize/2));
-        //console.log("draw pt1 pt2 "+pt1+" "+pt2)
-        //console.log("bull pos "+this.x+" "+this.y)
     }
 
     public set State(value:BubbleState){
@@ -167,13 +202,23 @@ export default class Bubble extends Laya.Sprite{
             this._curShape = this._normalShape;
             this.draw(this._normalShape);    
         }else{
-            this.checkTransformShape(this.getShape(this._state),this.getShape(value),Bubble.TransformTime,Laya.Ease.backOut);
+            this.checkTransformShape(this.getShape(this._state),this.getShape(value),Bubble.TransformTime,this.getEaseFun(this._state,value));
         }
         this._state = value;
     }
 
     public get State():BubbleState{
         return this._state;
+    }
+
+    public getEaseFun(srcState:BubbleState,dstState:BubbleState):Function{
+        if(srcState == BubbleState.NORMAL && dstState == BubbleState.MOVE){
+            return Laya.Ease.backOut;
+        }else if(srcState == BubbleState.MOVE && dstState == BubbleState.NORMAL){
+            return Laya.Ease.backOut;
+        }else{
+            return Laya.Ease.bounceOut;
+        }
     }
 
     public getShape(state:BubbleState):BubbleShape{
@@ -195,9 +240,9 @@ export default class Bubble extends Laya.Sprite{
 
     public checkTransformShape(srcShape:BubbleShape,dstShape:BubbleShape,totalTime:number, easeFunc:Function,overrite:boolean=false){
         //如果正在变形中,下次变形放在延迟Handler里处理,等上一个变形完再接着执行下次变形,只延迟处理一次变形
-        if(this._transformHandler) return;
+        //if(this._transformHandler) return;
         if(this._isTransforming){
-            this._transformHandler = Laya.Handler.create(this,this.onTransformComplete,[dstShape,totalTime,easeFunc,overrite]);
+            //this._transformHandler = Laya.Handler.create(this,this.onTransformComplete,[dstShape,totalTime,easeFunc,overrite]);
         }else{
             this.transformShape(srcShape,dstShape,totalTime,easeFunc,overrite);
         }
@@ -241,20 +286,28 @@ export default class Bubble extends Laya.Sprite{
             this._tmpShape.ptList = list;
             this.draw(this._tmpShape);
             if(startTime >= totalTime){
-                if(overrite){
-                    srcShape.startX = dstShape.startX;
-                    srcShape.startY = dstShape.startY;
-                    srcShape.ptList = dstShape.ptList;
-                    this._curShape = srcShape;
-                }else{
-                    this._curShape = dstShape;
-                }
+                this._curShape = dstShape;
                 this._isTransforming=false;
-                if(this._transformHandler){
-                    this._transformHandler.runWith(this._curShape);
-                    this._transformHandler=null;
-                }
+                // if(this._transformHandler){
+                //     this._transformHandler.runWith(this._curShape);
+                //     this._transformHandler=null;
+                // }
+                this.checkStateShape();
                 break;
+            }
+        }
+    }
+    /**
+     * 形状变换完毕,校验当前形状是否和状态匹配
+     */
+    private checkStateShape(){
+        if(this.State == BubbleState.NORMAL){
+            if(this._curShape != this._normalShape){
+                this.transformShape(this._curShape,this._normalShape,Bubble.TransformTime,this.getEaseFun(BubbleState.MOVE,this.State));
+            }
+        }else if(this.State == BubbleState.MOVE){
+            if(this._curShape != this._moveShape){
+                this.transformShape(this._curShape,this._moveShape,Bubble.TransformTime,this.getEaseFun(BubbleState.NORMAL,this.State));
             }
         }
     }
@@ -271,19 +324,16 @@ export default class Bubble extends Laya.Sprite{
     public get isMoving():boolean{
         return this.State == BubbleState.MOVE;
     }
-    // time:number=0;
+
     public update(){
-        // if(this.time++ % 120 == 0){
-        //     this.bubbleSize += 10;
-        // }
         if(this.isMoving){
             this.updateMove();
         }
-        //this.autoRotate();
+        this.autoRotate();
     }
 
     private autoRotate(){
-        this.rotation += 2;
+        this._starShapeSp.rotation += 0.5;
     }
 
     private updateMove(){
@@ -296,8 +346,13 @@ export default class Bubble extends Laya.Sprite{
 
     private playEatAnim(){
         Laya.Tween.clearAll(this._shapeSp);
-        this.scale(1,1);
-        Laya.Tween.from(this._shapeSp,{scaleX:1.3,scaleY:0.7},500,Laya.Ease.backOut);
+        this._shapeSp.scale(1,1);
+        Laya.Tween.from(this._shapeSp,{scaleX:1.3,scaleY:0.7},500,Laya.Ease.bounceOut);
+    }
+
+    public eat(num:number){
+        this.eatBeans += num;
+        this.playEatAnim();
     }
 
 }
@@ -316,13 +371,24 @@ export class BubbleFactory{
 }
 
 class BubbleShape{
+    state:BubbleState;
+    centerX:number;
+    centerY:number;
+    radius:number;
     startX:number;
     startY:number;
     ptList:number[]
+    constructor(state:BubbleState,centerX:number,centerY:number,radius:number){
+        this.state = state;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.radius = radius;
+    }
 }
 
 export enum BubbleState{
     INVALID,
+    TMP,
     NORMAL,
     MOVE,
     SPIKE,//刺球形状

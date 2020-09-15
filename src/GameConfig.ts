@@ -7,7 +7,7 @@ import test from "./test"
 export default class GameConfig{
     static width:number=720;
     static height:number=1280;
-    static scaleMode:string="fixedheight";
+    static scaleMode:string="fixedwidth";
     static screenMode:string="vertical";
     static alignV:string="top";
     static alignH:string="left";

@@ -382,6 +382,9 @@
         static pad(s) {
             return (s.length === 1) ? '0' + s : s;
         }
+        static powerDistance(x1, y1, x2, y2) {
+            return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+        }
     }
 
     class Bubble extends Laya.Sprite {
@@ -393,6 +396,7 @@
         init(size, skin, isAI) {
             this._shapeSp = this._shapeSp || new Laya.Sprite();
             this.addChild(this._shapeSp);
+            this.initStar(skin);
             this._initBubbleSize = size;
             this._visionRange = size;
             this._skinIndex = skin;
@@ -401,35 +405,67 @@
             this.level = 0;
             this.State = BubbleState.NORMAL;
         }
+        initStar(skinIdx) {
+            this._starShapeSp = this._starShapeSp || new Laya.Sprite();
+            let size = 260;
+            let halfSize = size / 2;
+            let path = [];
+            path.push(0, -130);
+            path.push(33, -33);
+            path.push(130, -30);
+            path.push(55, 32);
+            path.push(85, 130);
+            path.push(0, 73);
+            path.push(-85, 130);
+            path.push(-55, 32);
+            path.push(-130, -30);
+            path.push(-33, -33);
+            this._starShapeSp.graphics.clear();
+            this._starShapeSp.size(size, size);
+            this._starShapeSp.pivot(halfSize, halfSize + 10);
+            let idx = (skinIdx + 1) % Bubble.SKIN_LIST.length;
+            this._starShapeSp.graphics.drawPoly(halfSize, halfSize, path, Bubble.SKIN_LIST[2]);
+        }
+        showStar(centerX, centerY, size) {
+            this.addChild(this._starShapeSp);
+            this._starShapeSp.pos(centerX, centerY);
+            this._starShapeSp.scale(size / 320, size / 320);
+        }
         updateShape(size, deltaSize) {
             let radius = size / 2;
             if (this._normalShape == null) {
-                this._normalShape = new BubbleShape();
+                this._normalShape = new BubbleShape(BubbleState.NORMAL, radius, radius, radius);
                 [this._normalShape.startX, this._normalShape.startY, this._normalShape.ptList] = GameUtil.MakeRegularBubble(radius, radius, radius);
             }
             else if (this.State == BubbleState.NORMAL) {
                 this._normalShape.startX += deltaSize / 2;
                 this._normalShape.startY += deltaSize / 2;
                 this.draw(this._normalShape);
-                let newShape = new BubbleShape();
+                let oldShape = this._normalShape;
+                let newShape = new BubbleShape(BubbleState.NORMAL, radius, radius, radius);
                 [newShape.startX, newShape.startY, newShape.ptList] = GameUtil.MakeRegularBubble(radius, radius, radius);
-                this.checkTransformShape(this._normalShape, newShape, Bubble.TransformTime, Laya.Ease.bounceOut, true);
+                this.checkTransformShape(oldShape, newShape, Bubble.TransformTime, this.getEaseFun(this.State, this.State));
+                this._normalShape = newShape;
+                this._moveShape.centerX = this._moveShape.centerY = this._moveShape.radius = radius;
                 [this._moveShape.startX, this._moveShape.startY, this._moveShape.ptList] = GameUtil.MakeBezierBubble(radius, radius, radius);
             }
             if (this._moveShape == null) {
-                this._moveShape = new BubbleShape();
+                this._moveShape = new BubbleShape(BubbleState.MOVE, radius, radius, radius);
                 [this._moveShape.startX, this._moveShape.startY, this._moveShape.ptList] = GameUtil.MakeBezierBubble(radius, radius, radius);
             }
             else if (this.State == BubbleState.MOVE) {
                 this._moveShape.startX += deltaSize / 2;
                 this._moveShape.startY += deltaSize / 2;
                 this.draw(this._moveShape);
-                let newShape = new BubbleShape();
+                let oldShape = this._moveShape;
+                let newShape = new BubbleShape(BubbleState.MOVE, radius, radius, radius);
                 [newShape.startX, newShape.startY, newShape.ptList] = GameUtil.MakeBezierBubble(radius, radius, radius);
-                this.checkTransformShape(this._moveShape, newShape, Bubble.TransformTime, Laya.Ease.backOut, true);
+                this.checkTransformShape(oldShape, newShape, Bubble.TransformTime, this.getEaseFun(this.State, this.State));
+                this._moveShape = newShape;
+                this._normalShape.centerX = this._normalShape.centerY = this._normalShape.radius = radius;
                 [this._normalShape.startX, this._normalShape.startY, this._normalShape.ptList] = GameUtil.MakeRegularBubble(radius, radius, radius);
             }
-            this._tmpShape = this._tmpShape || new BubbleShape();
+            this._tmpShape = this._tmpShape || new BubbleShape(BubbleState.TMP, radius, radius, radius);
         }
         set bubbleSize(value) {
             if (this.bubbleSize == value)
@@ -478,11 +514,20 @@
             this._shapeSp.graphics.clear();
             let circleNums = this.circleNums;
             let outerColorIdx = (this._skinIndex + circleNums) % Bubble.SKIN_LIST.length;
-            this._shapeSp.graphics.drawPoly(shape.startX, shape.startY, shape.ptList, Bubble.SKIN_LIST[outerColorIdx]);
-            for (let i = circleNums - 1; i >= 0; --i) {
-                let size = this.getSizeByCircleNum(i);
-                let colorIdx = (this._skinIndex + i) % Bubble.SKIN_LIST.length;
-                this._shapeSp.graphics.drawCircle(this.bubbleSize / 2, this.bubbleSize / 2, size / 2, Bubble.SKIN_LIST[colorIdx]);
+            let lineColorIdx = (this._skinIndex + 1 + circleNums) % Bubble.SKIN_LIST.length;
+            this._shapeSp.graphics.drawPoly(shape.startX, shape.startY, shape.ptList, Bubble.SKIN_LIST[outerColorIdx], Bubble.SKIN_LIST[lineColorIdx], 3);
+            if (circleNums >= 1) {
+                for (let i = circleNums - 1; i >= 0; --i) {
+                    let size = this.getSizeByCircleNum(i);
+                    let colorIdx = (this._skinIndex + i) % Bubble.SKIN_LIST.length;
+                    this._shapeSp.graphics.drawCircle(this.bubbleSize / 2, this.bubbleSize / 2, size / 2, Bubble.SKIN_LIST[colorIdx]);
+                    if (i == 0) {
+                        this.showStar(this.bubbleSize / 2, this.bubbleSize / 2, size);
+                    }
+                }
+            }
+            else {
+                this.showStar(this._normalShape.centerX, this._normalShape.centerY, this._normalShape.radius * 2);
             }
         }
         set State(value) {
@@ -493,12 +538,23 @@
                 this.draw(this._normalShape);
             }
             else {
-                this.checkTransformShape(this.getShape(this._state), this.getShape(value), Bubble.TransformTime, Laya.Ease.backOut);
+                this.checkTransformShape(this.getShape(this._state), this.getShape(value), Bubble.TransformTime, this.getEaseFun(this._state, value));
             }
             this._state = value;
         }
         get State() {
             return this._state;
+        }
+        getEaseFun(srcState, dstState) {
+            if (srcState == BubbleState.NORMAL && dstState == BubbleState.MOVE) {
+                return Laya.Ease.backOut;
+            }
+            else if (srcState == BubbleState.MOVE && dstState == BubbleState.NORMAL) {
+                return Laya.Ease.backOut;
+            }
+            else {
+                return Laya.Ease.bounceOut;
+            }
         }
         getShape(state) {
             if (state == BubbleState.NORMAL) {
@@ -516,10 +572,7 @@
             this._shapeSp.rotation = value;
         }
         checkTransformShape(srcShape, dstShape, totalTime, easeFunc, overrite = false) {
-            if (this._transformHandler)
-                return;
             if (this._isTransforming) {
-                this._transformHandler = Laya.Handler.create(this, this.onTransformComplete, [dstShape, totalTime, easeFunc, overrite]);
             }
             else {
                 this.transformShape(srcShape, dstShape, totalTime, easeFunc, overrite);
@@ -563,24 +616,25 @@
                     this._tmpShape.ptList = list;
                     this.draw(this._tmpShape);
                     if (startTime >= totalTime) {
-                        if (overrite) {
-                            srcShape.startX = dstShape.startX;
-                            srcShape.startY = dstShape.startY;
-                            srcShape.ptList = dstShape.ptList;
-                            this._curShape = srcShape;
-                        }
-                        else {
-                            this._curShape = dstShape;
-                        }
+                        this._curShape = dstShape;
                         this._isTransforming = false;
-                        if (this._transformHandler) {
-                            this._transformHandler.runWith(this._curShape);
-                            this._transformHandler = null;
-                        }
+                        this.checkStateShape();
                         break;
                     }
                 }
             });
+        }
+        checkStateShape() {
+            if (this.State == BubbleState.NORMAL) {
+                if (this._curShape != this._normalShape) {
+                    this.transformShape(this._curShape, this._normalShape, Bubble.TransformTime, this.getEaseFun(BubbleState.MOVE, this.State));
+                }
+            }
+            else if (this.State == BubbleState.MOVE) {
+                if (this._curShape != this._moveShape) {
+                    this.transformShape(this._curShape, this._moveShape, Bubble.TransformTime, this.getEaseFun(BubbleState.NORMAL, this.State));
+                }
+            }
         }
         startMove(targetX, targetY) {
             this.State = BubbleState.MOVE;
@@ -596,9 +650,10 @@
             if (this.isMoving) {
                 this.updateMove();
             }
+            this.autoRotate();
         }
         autoRotate() {
-            this.rotation += 2;
+            this._starShapeSp.rotation += 0.5;
         }
         updateMove() {
             var radians = this.bubbleRotation * Math.PI / 180;
@@ -609,8 +664,12 @@
         }
         playEatAnim() {
             Laya.Tween.clearAll(this._shapeSp);
-            this.scale(1, 1);
-            Laya.Tween.from(this._shapeSp, { scaleX: 1.3, scaleY: 0.7 }, 500, Laya.Ease.backOut);
+            this._shapeSp.scale(1, 1);
+            Laya.Tween.from(this._shapeSp, { scaleX: 1.3, scaleY: 0.7 }, 500, Laya.Ease.bounceOut);
+        }
+        eat(num) {
+            this.eatBeans += num;
+            this.playEatAnim();
         }
     }
     Bubble.EMOTION_IDLIST = [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
@@ -618,8 +677,8 @@
     Bubble.TransformTime = 250;
     Bubble.AddCircleByLevels = 10;
     Bubble.AddLevelByBeans = 1;
-    Bubble.AddSizeByCircle = 5;
-    Bubble.AddSizeByLevel = 2;
+    Bubble.AddSizeByCircle = 2;
+    Bubble.AddSizeByLevel = 1;
     Bubble.InitSize = 50;
     class BubbleFactory {
         static Create(size, skin, isAI) {
@@ -633,14 +692,21 @@
     }
     BubbleFactory.SIGN_BUBBLE = "POOL_BUBBLE";
     class BubbleShape {
+        constructor(state, centerX, centerY, radius) {
+            this.state = state;
+            this.centerX = centerX;
+            this.centerY = centerY;
+            this.radius = radius;
+        }
     }
     var BubbleState;
     (function (BubbleState) {
         BubbleState[BubbleState["INVALID"] = 0] = "INVALID";
-        BubbleState[BubbleState["NORMAL"] = 1] = "NORMAL";
-        BubbleState[BubbleState["MOVE"] = 2] = "MOVE";
-        BubbleState[BubbleState["SPIKE"] = 3] = "SPIKE";
-        BubbleState[BubbleState["SPIKE2"] = 4] = "SPIKE2";
+        BubbleState[BubbleState["TMP"] = 1] = "TMP";
+        BubbleState[BubbleState["NORMAL"] = 2] = "NORMAL";
+        BubbleState[BubbleState["MOVE"] = 3] = "MOVE";
+        BubbleState[BubbleState["SPIKE"] = 4] = "SPIKE";
+        BubbleState[BubbleState["SPIKE2"] = 5] = "SPIKE2";
     })(BubbleState || (BubbleState = {}));
 
     class ResData {
@@ -685,11 +751,151 @@
             obs.init(skinIdx, size, beansNum);
             return obs;
         }
-        static Recycle(obj) {
-            Laya.Pool.recover(this.POOL_SIGN, obj);
+        static Recycle(obs) {
+            obs.removeSelf();
+            Laya.Pool.recover(this.POOL_SIGN, obs);
         }
     }
     ObstacleFactory.POOL_SIGN = "POOL_OBSTACLE";
+
+    class GameMap extends Laya.Sprite {
+        constructor() {
+            super();
+            this._bubbleList = [];
+        }
+        init(w, h) {
+            Laya.stage.addChild(this);
+            this.size(w, h);
+            this._maxPoint = new Laya.Point();
+            this._maxPoint.x = Math.ceil(this.width / GameMap.GridSize) * GameMap.GridSize;
+            this._maxPoint.y = Math.ceil(this.height / GameMap.GridSize) * GameMap.GridSize;
+            this._emotionAnim = new Laya.Animation();
+            this.draw();
+            this.initPlayers();
+            this.initObstacles();
+        }
+        addHero(b) {
+            this._bubbleHero = b;
+            this.add(b);
+        }
+        add(b) {
+            this.addChild(b);
+            this._bubbleList.push(b);
+        }
+        update() {
+            let [deltaX, deltaY] = this.checkUpdate();
+            let stageX = this.x + this._bubbleHero.x;
+            let stageY = this.y + this._bubbleHero.y;
+            if (deltaX > 0 && stageX > Laya.stage.width / 2 && (Laya.stage.width + Math.abs(this.x) < this._maxPoint.x)) {
+                this.x -= deltaX;
+            }
+            else if (deltaX < 0 && stageX < Laya.stage.width / 2 && this._bubbleHero.x > Laya.stage.width / 2) {
+                this.x -= deltaX;
+            }
+            if (deltaY > 0 && stageY > Laya.stage.height / 2 && (Laya.stage.height + Math.abs(this.y) < this._maxPoint.y)) {
+                this.y -= deltaY;
+            }
+            else if (deltaY < 0 && stageY < Laya.stage.height / 2 && this._bubbleHero.y > Laya.stage.height / 2) {
+                this.y -= deltaY;
+            }
+            this.checkCollider();
+        }
+        checkUpdate() {
+            let preX = this._bubbleHero.x;
+            let preY = this._bubbleHero.y;
+            this._bubbleHero.update();
+            let nowX = this._bubbleHero.x;
+            let nowY = this._bubbleHero.y;
+            if (nowX + this._bubbleHero.bubbleSize / 2 > this._maxPoint.x) {
+                nowX = this._bubbleHero.x = this._maxPoint.x - this._bubbleHero.bubbleSize / 2;
+            }
+            else if (nowX < this._bubbleHero.bubbleSize / 2) {
+                nowX = this._bubbleHero.x = this._bubbleHero.bubbleSize / 2;
+            }
+            if (nowY + this._bubbleHero.bubbleSize / 2 > this._maxPoint.y) {
+                nowY = this._bubbleHero.y = this._maxPoint.y - this._bubbleHero.bubbleSize / 2;
+            }
+            else if (nowY < this._bubbleHero.bubbleSize / 2) {
+                nowY = this._bubbleHero.y = this._bubbleHero.bubbleSize / 2;
+            }
+            let deltaX = nowX - preX;
+            let deltaY = nowY - preY;
+            return [deltaX, deltaY];
+        }
+        checkCollider() {
+            this._delObstacleList.length = 0;
+            let count = this._obstacleList.length;
+            for (let i = 0; i < count; ++i) {
+                let obs = this._obstacleList[i];
+                if (GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, obs.x, obs.y) <= Math.pow(this._bubbleHero.width / 2 + obs.width / 2 + 5, 2)) {
+                    this._bubbleHero.eat(obs.beansNum);
+                    this.playEmotionAnim();
+                    this._delObstacleList.push(obs);
+                    ObstacleFactory.Recycle(obs);
+                }
+            }
+            this._obstacleList = this._obstacleList.filter((ele, index, array) => {
+                return this._delObstacleList.indexOf(ele) == -1;
+            });
+        }
+        initPlayers() {
+        }
+        initObstacles() {
+            this._obstacleList = [];
+            this._delObstacleList = [];
+            for (let i = 0; i < 100; ++i) {
+                let size = GameMap.GridSize + Math.floor(Math.random() * GameMap.GridSize);
+                let skinIdx = Math.floor(Math.random() * 8);
+                let x = size / 2 + Math.random() * (this._maxPoint.x - size / 2);
+                let y = size / 2 + Math.random() * (this._maxPoint.y - size / 2);
+                let obs = ObstacleFactory.Create(skinIdx, size, 1);
+                this._obstacleList.push(obs);
+                obs.pos(x, y);
+                this.addChild(obs);
+            }
+        }
+        playEmotionAnim() {
+            if (Math.random() * 100 > 30)
+                return;
+            let list = [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
+            let idx = Math.floor(Math.random() * list.length);
+            this._emotionAnim.loadAnimation(`chat/anim/emoji_${list[idx]}.ani`, Laya.Handler.create(this, () => {
+                let bound = this._emotionAnim.getGraphicBounds();
+                Laya.stage.addChild(this._emotionAnim);
+                this._emotionAnim.pivot(bound.x + bound.width / 2, bound.y + bound.height / 2);
+                this._emotionAnim.pos(Laya.stage.width / 2, 100);
+                this._emotionAnim.autoPlay = true;
+                Laya.timer.once(1500, this, this.stopEmotionAnim);
+            }), "res/atlas/chat/emoji.atlas");
+        }
+        stopEmotionAnim() {
+            this._emotionAnim.clear();
+            this._emotionAnim.removeSelf();
+        }
+        draw() {
+            this.graphics.clear();
+            let row = Math.ceil(this.height / GameMap.GridSize);
+            let col = Math.ceil(this.width / GameMap.GridSize);
+            for (let i = 0; i <= row; ++i) {
+                let x0 = 0;
+                let y0 = (i) * GameMap.GridSize;
+                let x1 = this._maxPoint.x;
+                let y1 = y0;
+                this.graphics.drawLine(x0, y0, x1, y1, GameMap.LineColor, 1);
+            }
+            for (let i = 0; i <= col; ++i) {
+                let x0 = (i) * GameMap.GridSize;
+                let y0 = 0;
+                let x1 = x0;
+                let y1 = this._maxPoint.y;
+                this.graphics.drawLine(x0, y0, x1, y1, GameMap.LineColor, 1);
+            }
+        }
+    }
+    GameMap.GridSize = 30;
+    GameMap.LineColor = '#000000';
+    GameMap.MAP_WIDTH = 2048;
+    GameMap.MAP_HEIGHT = 2048;
 
     class GameControl extends Laya.Script {
         constructor() {
@@ -699,8 +905,7 @@
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
             Laya.stage.on(Laya.Event.MOUSE_UP, this, this.onTouchUp);
             Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
-            this.initPlayers();
-            this.initObstacles();
+            this.initMap();
         }
         onDisable() {
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
@@ -714,16 +919,14 @@
         }
         onTouchDown() {
             Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.onTouchMove);
-            this._lastMousePosX = Laya.stage.mouseX;
-            this._lastMousePosY = Laya.stage.mouseY;
+            this._lastMousePosX = this._map.mouseX;
+            ;
+            this._lastMousePosY = this._map.mouseY;
             this._bubbleHero.startMove(this._lastMousePosX, this._lastMousePosY);
         }
-        onRightClick() {
-            this._bubbleHero.eatBeans += 1;
-        }
         onTouchMove() {
-            let curMouseX = Laya.stage.mouseX;
-            let curMouseY = Laya.stage.mouseY;
+            let curMouseX = this._map.mouseX;
+            let curMouseY = this._map.mouseY;
             let deltaX = curMouseX - this._lastMousePosX;
             let deltaY = curMouseY - this._lastMousePosY;
             let len = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
@@ -740,25 +943,29 @@
             this._bubbleHero.stopMove();
         }
         onUpdate() {
-            this._bubbleHero.update();
+            this._map.update();
         }
-        initPlayers() {
+        checkCollider() {
+            this._delObstacleList.length = 0;
+            let count = this._obstacleList.length;
+            for (let i = 0; i < count; ++i) {
+                let obs = this._obstacleList[i];
+                if (GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, obs.x, obs.y) <= Math.pow(this._bubbleHero.width / 2 + obs.width / 2 + 5, 2)) {
+                    this._bubbleHero.eat(obs.beansNum);
+                    this._delObstacleList.push(obs);
+                    ObstacleFactory.Recycle(obs);
+                }
+            }
+            this._obstacleList = this._obstacleList.filter((ele, index, array) => {
+                return this._delObstacleList.indexOf(ele) == -1;
+            });
+        }
+        initMap() {
+            this._map = new GameMap();
+            this._map.init(GameMap.MAP_WIDTH, GameMap.MAP_HEIGHT);
             this._bubbleHero = BubbleFactory.Create(Bubble.InitSize, 0, false);
             this._bubbleHero.pos(Laya.stage.width / 2, Laya.stage.height / 2);
-            Laya.stage.addChild(this._bubbleHero);
-        }
-        initObstacles() {
-            this._obstacleList = [];
-            for (let i = 0; i < 100; ++i) {
-                let size = 10 + Math.floor(Math.random() * 10);
-                let skinIdx = Math.floor(Math.random() * 8);
-                let x = Math.random() * Laya.stage.width;
-                let y = Math.random() * Laya.stage.height;
-                let obs = ObstacleFactory.Create(skinIdx, size, 1);
-                this._obstacleList.push(obs);
-                obs.pos(x, y);
-                Laya.stage.addChild(obs);
-            }
+            this._map.addHero(this._bubbleHero);
         }
     }
     GameControl.TouchThreshold = 8;
@@ -1083,7 +1290,7 @@
     }
     GameConfig.width = 720;
     GameConfig.height = 1280;
-    GameConfig.scaleMode = "fixedheight";
+    GameConfig.scaleMode = "fixedwidth";
     GameConfig.screenMode = "vertical";
     GameConfig.alignV = "top";
     GameConfig.alignH = "left";
@@ -1110,7 +1317,6 @@
             Laya.stage.alignH = GameConfig.alignH;
             Laya.stage.bgColor = '#eeeeee';
             Laya.URL.exportSceneToJson = GameConfig.exportSceneToJson;
-            Laya.Stat.show(0, 0);
             if (GameConfig.debug || Laya.Utils.getQueryString("debug") == "true")
                 Laya.enableDebugPanel();
             if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"])

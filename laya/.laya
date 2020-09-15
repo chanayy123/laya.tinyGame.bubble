@@ -29,7 +29,7 @@ import Scene=Laya.Scene;]]>   </codeImportsTS>
    <trimempty>true   </trimempty>
    <startScene>game.scene   </startScene>
    <engineType>2D   </engineType>
-   <scaleMode>fixedheight   </scaleMode>
+   <scaleMode>fixedwidth   </scaleMode>
    <screenMode>vertical   </screenMode>
    <alignV>top   </alignV>
    <alignH>left   </alignH>

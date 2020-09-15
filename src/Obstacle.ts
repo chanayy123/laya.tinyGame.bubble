@@ -47,7 +47,8 @@ export class ObstacleFactory{
         return obs;
     }
 
-    public static Recycle(obj:Obstacle){
-        Laya.Pool.recover(this.POOL_SIGN,obj);
+    public static Recycle(obs:Obstacle){
+        obs.removeSelf();
+        Laya.Pool.recover(this.POOL_SIGN,obs);
     }
 }
