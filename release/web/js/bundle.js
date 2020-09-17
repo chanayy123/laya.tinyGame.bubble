@@ -385,12 +385,68 @@
         static powerDistance(x1, y1, x2, y2) {
             return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
         }
+        static clamp(value, min, max) {
+            return value < min ? min : value > max ? max : value;
+        }
     }
+
+    class ResData {
+        static getObstacleRes(index) {
+            return `game/bubble_${index}.png`;
+        }
+        static getEmotionRes(id) {
+            return `chat/anim/emoji_${id}.ani`;
+        }
+    }
+    ResData.RES_ATLAS_GAME = "res/atlas/game.atlas";
+    ResData.RES_ATLAS_EMOTION = "res/atlas/chat/emoji.atlas";
+
+    class Obstacle extends Laya.Sprite {
+        constructor() {
+            super();
+        }
+        init(skinIdx, size, beansNum) {
+            this.skinIndex = skinIdx;
+            this.obsSize = size;
+            this._beansNum = beansNum;
+        }
+        get beansNum() {
+            return this._beansNum;
+        }
+        set skinIndex(value) {
+            let res = ResData.getObstacleRes(value);
+            this.loadImage(res);
+            this._skinIndex = value;
+        }
+        get skinIndex() {
+            return this._skinIndex;
+        }
+        set obsSize(value) {
+            this._obsSize = value;
+            this.width = this.height = value;
+            this.pivot(value / 2, value / 2);
+        }
+        get obsSize() {
+            return this._obsSize;
+        }
+    }
+    class ObstacleFactory {
+        static Create(skinIdx, size = 0, beansNum = 1) {
+            let obs = Laya.Pool.getItemByClass(this.POOL_SIGN, Obstacle);
+            obs.init(skinIdx, size, beansNum);
+            return obs;
+        }
+        static Recycle(obs) {
+            obs.removeSelf();
+            Laya.Pool.recover(this.POOL_SIGN, obs);
+        }
+    }
+    ObstacleFactory.POOL_SIGN = "POOL_OBSTACLE";
 
     class Bubble extends Laya.Sprite {
         constructor() {
             super();
-            this._moveSpeed = 5;
+            this._moveSpeed = 10;
             this._state = BubbleState.INVALID;
         }
         init(size, skin, isAI) {
@@ -398,11 +454,12 @@
             this.addChild(this._shapeSp);
             this.initStar(skin);
             this._initBubbleSize = size;
-            this._visionRange = size;
+            this._visionRange = Laya.stage.width;
             this._skinIndex = skin;
             this._isAI = isAI;
             this._eatBeans = 0;
             this.level = 0;
+            this.setMoveDelta(0, 0);
             this.State = BubbleState.NORMAL;
         }
         initStar(skinIdx) {
@@ -433,6 +490,7 @@
         }
         updateShape(size, deltaSize) {
             let radius = size / 2;
+            this._killShape = this._killShape || new BubbleShape(BubbleState.SPIKE, radius, radius, radius);
             if (this._normalShape == null) {
                 this._normalShape = new BubbleShape(BubbleState.NORMAL, radius, radius, radius);
                 [this._normalShape.startX, this._normalShape.startY, this._normalShape.ptList] = GameUtil.MakeRegularBubble(radius, radius, radius);
@@ -448,6 +506,8 @@
                 this._normalShape = newShape;
                 this._moveShape.centerX = this._moveShape.centerY = this._moveShape.radius = radius;
                 [this._moveShape.startX, this._moveShape.startY, this._moveShape.ptList] = GameUtil.MakeBezierBubble(radius, radius, radius);
+                this._killShape.centerY = this._killShape.centerY = this._killShape.radius = radius;
+                [this._killShape.startX, this._killShape.startY, this._killShape.ptList] = GameUtil.MakeRRBubble(radius, radius, radius, radius + radius * 0.2);
             }
             if (this._moveShape == null) {
                 this._moveShape = new BubbleShape(BubbleState.MOVE, radius, radius, radius);
@@ -464,6 +524,8 @@
                 this._moveShape = newShape;
                 this._normalShape.centerX = this._normalShape.centerY = this._normalShape.radius = radius;
                 [this._normalShape.startX, this._normalShape.startY, this._normalShape.ptList] = GameUtil.MakeRegularBubble(radius, radius, radius);
+                this._killShape.centerY = this._killShape.centerY = this._killShape.radius = radius;
+                [this._killShape.startX, this._killShape.startY, this._killShape.ptList] = GameUtil.MakeRRBubble(radius, radius, radius, radius + radius * 0.2);
             }
             this._tmpShape = this._tmpShape || new BubbleShape(BubbleState.TMP, radius, radius, radius);
         }
@@ -479,6 +541,21 @@
             this._shapeSp.pivot(halfSize, halfSize);
             this._shapeSp.pos(halfSize, halfSize);
             this.updateShape(value, deltaSize);
+        }
+        get visionRange() {
+            return this._visionRange;
+        }
+        set aimTarget(value) {
+            this._aimTarget = value;
+            if (value) {
+                this.bubbleRotation = Math.atan2(value.y - this.y, value.x - this.x) * 180 / Math.PI;
+                if (this.State == BubbleState.NORMAL) {
+                    this.State = BubbleState.MOVE;
+                }
+            }
+        }
+        get aimTarget() {
+            return this._aimTarget;
         }
         get bubbleSize() {
             return this._bubbleSize;
@@ -510,6 +587,27 @@
         get maxLevel() {
             return this.maxCircleNum * Bubble.AddCircleByLevels;
         }
+        clearVisions() {
+            this._visionObsList && (this._visionObsList.length = 0);
+            this._visionBubbleList && (this._visionBubbleList.length = 0);
+        }
+        addVisionBubble(target) {
+            this._visionBubbleList = this._visionBubbleList || [];
+            this._visionBubbleList.push(target);
+        }
+        addVisionObs(target) {
+            this._visionObsList = this._visionObsList || [];
+            this._visionObsList.push(target);
+        }
+        isInVision(target) {
+            if (this._visionBubbleList && this._visionBubbleList.indexOf(target) != -1) {
+                return true;
+            }
+            if (this._visionObsList && this._visionObsList.indexOf(target) != -1) {
+                return true;
+            }
+            return false;
+        }
         draw(shape) {
             this._shapeSp.graphics.clear();
             let circleNums = this.circleNums;
@@ -540,10 +638,16 @@
             else {
                 this.checkTransformShape(this.getShape(this._state), this.getShape(value), Bubble.TransformTime, this.getEaseFun(this._state, value));
             }
+            this.onStateChange(this.State, value);
             this._state = value;
         }
         get State() {
             return this._state;
+        }
+        onStateChange(lastState, nowState) {
+            if (nowState == BubbleState.DEAD) {
+                BubbleFactory.Recycle(this);
+            }
         }
         getEaseFun(srcState, dstState) {
             if (srcState == BubbleState.NORMAL && dstState == BubbleState.MOVE) {
@@ -563,6 +667,9 @@
             else if (state == BubbleState.MOVE) {
                 return this._moveShape;
             }
+            else if (state == BubbleState.SPIKE) {
+                return this._killShape;
+            }
             return null;
         }
         get bubbleRotation() {
@@ -572,14 +679,11 @@
             this._shapeSp.rotation = value;
         }
         checkTransformShape(srcShape, dstShape, totalTime, easeFunc, overrite = false) {
-            if (this._isTransforming) {
-            }
-            else {
+            if (srcShape == null || dstShape == null)
+                return;
+            if (!this._isTransforming) {
                 this.transformShape(srcShape, dstShape, totalTime, easeFunc, overrite);
             }
-        }
-        onTransformComplete(dstShape, totalTime, easeFunc, overrite = false, srcShape) {
-            this.transformShape(srcShape, dstShape, totalTime, easeFunc, overrite);
         }
         transformShape(srcShape, dstShape, totalTime, easeFunc, overrite = false) {
             return __awaiter(this, void 0, void 0, function* () {
@@ -627,49 +731,157 @@
         checkStateShape() {
             if (this.State == BubbleState.NORMAL) {
                 if (this._curShape != this._normalShape) {
-                    this.transformShape(this._curShape, this._normalShape, Bubble.TransformTime, this.getEaseFun(BubbleState.MOVE, this.State));
+                    this.transformShape(this._curShape, this._normalShape, Bubble.TransformTime, this.getEaseFun(this._curShape.state, this.State));
                 }
             }
             else if (this.State == BubbleState.MOVE) {
                 if (this._curShape != this._moveShape) {
-                    this.transformShape(this._curShape, this._moveShape, Bubble.TransformTime, this.getEaseFun(BubbleState.NORMAL, this.State));
+                    this.transformShape(this._curShape, this._moveShape, Bubble.TransformTime, this.getEaseFun(this._curShape.state, this.State));
+                }
+            }
+            else if (this.State == BubbleState.SPIKE) {
+                if (this._curShape != this._killShape) {
+                    this.transformShape(this._curShape, this._killShape, Bubble.TransformTime, this.getEaseFun(this._curShape.state, this.State));
                 }
             }
         }
         startMove(targetX, targetY) {
-            this.State = BubbleState.MOVE;
-            this.bubbleRotation = Math.atan2(targetY - this.y, targetX - this.x) * 180 / Math.PI;
+            if (this.State == BubbleState.NORMAL) {
+                this.State = BubbleState.MOVE;
+                this.bubbleRotation = Math.atan2(targetY - this.y, targetX - this.x) * 180 / Math.PI;
+            }
         }
         stopMove() {
-            this.State = BubbleState.NORMAL;
+            if (this.isMoving)
+                this.State = BubbleState.NORMAL;
         }
         get isMoving() {
             return this.State == BubbleState.MOVE;
         }
+        get isAlive() {
+            return this.State != BubbleState.DEAD;
+        }
+        set moveSpeed(value) {
+            this._moveSpeed = value;
+        }
+        get moveSpeed() {
+            return this._moveSpeed;
+        }
+        setMoveDelta(deltaX, deltaY) {
+            this._moveDelta = this._moveDelta || new Laya.Point();
+            this._moveDelta.x = deltaX;
+            this._moveDelta.y = deltaY;
+        }
+        get moveDelta() {
+            return this._moveDelta;
+        }
+        setMoveBoundary(x, y) {
+            this._moveBoundary = this._moveBoundary || new Laya.Point();
+            this._moveBoundary.x = x;
+            this._moveBoundary.y = y;
+        }
+        get moveBoundary() {
+            return this._moveBoundary;
+        }
         update() {
+            if (!this.isAlive)
+                return;
             if (this.isMoving) {
                 this.updateMove();
             }
-            this.autoRotate();
+            else {
+                this.setMoveDelta(0, 0);
+            }
+            this.autoRotateStar();
         }
-        autoRotate() {
+        autoRotateStar() {
             this._starShapeSp.rotation += 0.5;
         }
         updateMove() {
             var radians = this.bubbleRotation * Math.PI / 180;
             var xOffset = Math.cos(radians) * this._moveSpeed;
             var yOffset = Math.sin(radians) * this._moveSpeed;
-            this.x += xOffset;
-            this.y += yOffset;
+            let preX = this.x;
+            let preY = this.y;
+            this.x = GameUtil.clamp(this.x + xOffset, this.bubbleSize / 2, this.moveBoundary.x - this.bubbleSize / 2);
+            this.y = GameUtil.clamp(this.y + yOffset, this.bubbleSize / 2, this.moveBoundary.y - this.bubbleSize / 2);
+            this.setMoveDelta(this.x - preX, this.y - preY);
+        }
+        get isOnBoundary() {
+            if (this.x <= this.width / 2 || this.x >= this.moveBoundary.x - this.width / 2)
+                return true;
+            if (this.y <= this.width / 2 || this.y >= this.moveBoundary.y - this.width / 2)
+                return true;
+            return false;
+        }
+        startAILogic() {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (!this._isAI)
+                    return;
+                while (this.displayedInStage) {
+                    let baseTime = 0;
+                    if (this.isOnBoundary) {
+                        this.bubbleRotation = Math.floor(Math.random() * 360);
+                        this.State = BubbleState.MOVE;
+                        baseTime = 500;
+                    }
+                    else {
+                        if (this._visionObsList && this._visionObsList.length > 0) {
+                            if (this.aimTarget == null) {
+                                let idx = Math.floor(Math.random() * this._visionObsList.length);
+                                this.aimTarget = this._visionObsList[idx];
+                            }
+                            else if (!this.isInVision(this.aimTarget)) {
+                                let idx = Math.floor(Math.random() * this._visionObsList.length);
+                                this.aimTarget = this._visionObsList[idx];
+                            }
+                            baseTime = 500;
+                        }
+                        else {
+                            this.aimTarget = null;
+                            let rand = Math.random() * 100;
+                            if (rand <= 50) {
+                                this.bubbleRotation = Math.floor(Math.random() * 360);
+                                this.State = BubbleState.MOVE;
+                            }
+                            else if (rand <= 60) {
+                                this.State = BubbleState.NORMAL;
+                            }
+                            else {
+                                this.State = BubbleState.MOVE;
+                            }
+                            baseTime = 1000;
+                        }
+                    }
+                    let time = baseTime + Math.floor(Math.random() * 500);
+                    yield GameUtil.wait(time);
+                }
+            });
         }
         playEatAnim() {
             Laya.Tween.clearAll(this._shapeSp);
             this._shapeSp.scale(1, 1);
             Laya.Tween.from(this._shapeSp, { scaleX: 1.3, scaleY: 0.7 }, 500, Laya.Ease.bounceOut);
         }
-        eat(num) {
-            this.eatBeans += num;
+        playKillAnim() {
+            console.log('播放击杀动画');
+            this.State = BubbleState.SPIKE;
+            Laya.timer.once(300, this, this.resumeState, [BubbleState.NORMAL]);
+        }
+        resumeState(state) {
+            this.State = state;
+            console.log("击杀动画播放完毕,恢复到待机状态");
+        }
+        eat(obs) {
+            this.eatBeans += obs.beansNum;
             this.playEatAnim();
+            this.aimTarget = this.aimTarget == obs ? null : this.aimTarget;
+            ObstacleFactory.Recycle(obs);
+        }
+        kill(b) {
+            console.log(`玩家【${this.name}】击杀了玩家【${b.name}】`);
+            b.State = BubbleState.DEAD;
+            this.playKillAnim();
         }
     }
     Bubble.EMOTION_IDLIST = [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
@@ -687,6 +899,7 @@
             return b;
         }
         static Recycle(bubble) {
+            bubble.removeSelf();
             Laya.Pool.recover(this.SIGN_BUBBLE, bubble);
         }
     }
@@ -707,68 +920,32 @@
         BubbleState[BubbleState["MOVE"] = 3] = "MOVE";
         BubbleState[BubbleState["SPIKE"] = 4] = "SPIKE";
         BubbleState[BubbleState["SPIKE2"] = 5] = "SPIKE2";
+        BubbleState[BubbleState["DEAD"] = 6] = "DEAD";
     })(BubbleState || (BubbleState = {}));
-
-    class ResData {
-        static getObstacleRes(index) {
-            return `game/bubble_${index}.png`;
-        }
-    }
-    ResData.RES_ATLAS_GAME = "res/atlas/game.atlas";
-
-    class Obstacle extends Laya.Sprite {
-        constructor() {
-            super();
-        }
-        init(skinIdx, size, beansNum) {
-            this.skinIndex = skinIdx;
-            this.obsSize = size;
-            this._beansNum = beansNum;
-        }
-        get beansNum() {
-            return this._beansNum;
-        }
-        set skinIndex(value) {
-            let res = ResData.getObstacleRes(value);
-            this.loadImage(res);
-            this._skinIndex = value;
-        }
-        get skinIndex() {
-            return this._skinIndex;
-        }
-        set obsSize(value) {
-            this._obsSize = value;
-            this.width = this.height = value;
-            this.pivot(value / 2, value / 2);
-        }
-        get obsSize() {
-            return this._obsSize;
-        }
-    }
-    class ObstacleFactory {
-        static Create(skinIdx, size = 0, beansNum = 1) {
-            let obs = Laya.Pool.getItemByClass(this.POOL_SIGN, Obstacle);
-            obs.init(skinIdx, size, beansNum);
-            return obs;
-        }
-        static Recycle(obs) {
-            obs.removeSelf();
-            Laya.Pool.recover(this.POOL_SIGN, obs);
-        }
-    }
-    ObstacleFactory.POOL_SIGN = "POOL_OBSTACLE";
+    var AIType;
+    (function (AIType) {
+        AIType[AIType["Ordinary"] = 0] = "Ordinary";
+        AIType[AIType["Risk"] = 1] = "Risk";
+        AIType[AIType["Coward"] = 2] = "Coward";
+    })(AIType || (AIType = {}));
 
     class GameMap extends Laya.Sprite {
         constructor() {
             super();
             this._bubbleList = [];
         }
+        static get Instance() {
+            if (GameMap._instance == null) {
+                GameMap._instance = new GameMap();
+            }
+            return this._instance;
+        }
         init(w, h) {
             Laya.stage.addChild(this);
             this.size(w, h);
-            this._maxPoint = new Laya.Point();
-            this._maxPoint.x = Math.ceil(this.width / GameMap.GridSize) * GameMap.GridSize;
-            this._maxPoint.y = Math.ceil(this.height / GameMap.GridSize) * GameMap.GridSize;
+            this._boundary = new Laya.Point();
+            this._boundary.x = Math.ceil(this.width / GameMap.GridSize) * GameMap.GridSize;
+            this._boundary.y = Math.ceil(this.height / GameMap.GridSize) * GameMap.GridSize;
             this._emotionAnim = new Laya.Animation();
             this.draw();
             this.initPlayers();
@@ -776,78 +953,204 @@
         }
         addHero(b) {
             this._bubbleHero = b;
-            this.add(b);
-        }
-        add(b) {
+            b.setMoveBoundary(this._boundary.x, this._boundary.y);
             this.addChild(b);
-            this._bubbleList.push(b);
         }
         update() {
-            let [deltaX, deltaY] = this.checkUpdate();
+            this.checkUpdate();
+            this.checkScrollMap(this._bubbleHero.moveDelta.x, this._bubbleHero.moveDelta.y);
+            this.checkCollider();
+            this.checkOutOfStage();
+        }
+        checkOutOfStage() {
+            let count = this._bubbleAIList.length;
+            for (let i = 0; i < count; ++i) {
+                let b = this._bubbleAIList[i];
+                if (!this.isInStage(b)) {
+                    let icon = this._bubbleIconMap.get(b);
+                    if (b.x + this.x < 0) {
+                        icon.x = -this.x + icon.width / 2;
+                    }
+                    else if (b.x + this.x > Laya.stage.width) {
+                        icon.x = Laya.stage.width - this.x - icon.width / 2;
+                    }
+                    else {
+                        icon.x = b.x;
+                    }
+                    if (b.y + this.y < 0) {
+                        icon.y = -this.y + icon.height / 2;
+                    }
+                    else if (b.y + this.y > Laya.stage.height) {
+                        icon.y = Laya.stage.height - this.y - icon.height / 2;
+                    }
+                    else {
+                        icon.y = b.y;
+                    }
+                    this.addChild(icon);
+                }
+                else {
+                    let icon = this._bubbleIconMap.get(b);
+                    icon.removeSelf();
+                }
+            }
+        }
+        checkUpdate() {
+            this._bubbleHero.update();
+            let count = this._bubbleAIList.length;
+            for (let i = 0; i < count; ++i) {
+                let ai = this._bubbleAIList[i];
+                ai.update();
+            }
+        }
+        isOnBorder(obj) {
+            if (obj.x <= obj.width / 2 || obj.x >= this._boundary.x - obj.width / 2)
+                return true;
+            if (obj.y <= obj.width / 2 || obj.y >= this._boundary.y - obj.width / 2)
+                return true;
+            return false;
+        }
+        isInStage(obj) {
+            if (obj.x + this.x <= -obj.width / 2 || obj.x + this.x >= Laya.stage.width + obj.width / 2)
+                return false;
+            if (obj.y + this.y <= -obj.height / 2 || obj.y + this.y >= Laya.stage.height + obj.height / 2)
+                return false;
+            return true;
+        }
+        checkScrollMap(deltaX, deltaY) {
             let stageX = this.x + this._bubbleHero.x;
             let stageY = this.y + this._bubbleHero.y;
-            if (deltaX > 0 && stageX > Laya.stage.width / 2 && (Laya.stage.width + Math.abs(this.x) < this._maxPoint.x)) {
+            if (deltaX > 0 && stageX > Laya.stage.width / 2 && (Laya.stage.width + Math.abs(this.x) < this._boundary.x)) {
                 this.x -= deltaX;
             }
             else if (deltaX < 0 && stageX < Laya.stage.width / 2 && this._bubbleHero.x > Laya.stage.width / 2) {
                 this.x -= deltaX;
             }
-            if (deltaY > 0 && stageY > Laya.stage.height / 2 && (Laya.stage.height + Math.abs(this.y) < this._maxPoint.y)) {
+            if (deltaY > 0 && stageY > Laya.stage.height / 2 && (Laya.stage.height + Math.abs(this.y) < this._boundary.y)) {
                 this.y -= deltaY;
             }
             else if (deltaY < 0 && stageY < Laya.stage.height / 2 && this._bubbleHero.y > Laya.stage.height / 2) {
                 this.y -= deltaY;
             }
-            this.checkCollider();
-        }
-        checkUpdate() {
-            let preX = this._bubbleHero.x;
-            let preY = this._bubbleHero.y;
-            this._bubbleHero.update();
-            let nowX = this._bubbleHero.x;
-            let nowY = this._bubbleHero.y;
-            if (nowX + this._bubbleHero.bubbleSize / 2 > this._maxPoint.x) {
-                nowX = this._bubbleHero.x = this._maxPoint.x - this._bubbleHero.bubbleSize / 2;
-            }
-            else if (nowX < this._bubbleHero.bubbleSize / 2) {
-                nowX = this._bubbleHero.x = this._bubbleHero.bubbleSize / 2;
-            }
-            if (nowY + this._bubbleHero.bubbleSize / 2 > this._maxPoint.y) {
-                nowY = this._bubbleHero.y = this._maxPoint.y - this._bubbleHero.bubbleSize / 2;
-            }
-            else if (nowY < this._bubbleHero.bubbleSize / 2) {
-                nowY = this._bubbleHero.y = this._bubbleHero.bubbleSize / 2;
-            }
-            let deltaX = nowX - preX;
-            let deltaY = nowY - preY;
-            return [deltaX, deltaY];
         }
         checkCollider() {
-            this._delObstacleList.length = 0;
-            let count = this._obstacleList.length;
-            for (let i = 0; i < count; ++i) {
-                let obs = this._obstacleList[i];
-                if (GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, obs.x, obs.y) <= Math.pow(this._bubbleHero.width / 2 + obs.width / 2 + 5, 2)) {
-                    this._bubbleHero.eat(obs.beansNum);
-                    this.playEmotionAnim();
-                    this._delObstacleList.push(obs);
-                    ObstacleFactory.Recycle(obs);
+            let bCount = this._bubbleAIList.length;
+            for (let i = 0; i < bCount; ++i) {
+                let b = this._bubbleAIList[i];
+                b.clearVisions();
+            }
+            this._delBubbleList.length = 0;
+            for (let i = 0; i < bCount; ++i) {
+                if (!this._bubbleHero.isAlive)
+                    break;
+                let b = this._bubbleAIList[i];
+                if (!b.isAlive)
+                    continue;
+                if (GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, b.x, b.y) <= Math.pow(this._bubbleHero.bubbleSize / 2 + b.bubbleSize / 2, 2)) {
+                    if (this._bubbleHero.level > b.level) {
+                        this._bubbleHero.kill(b);
+                        this._delBubbleList.push(b);
+                        this.delBubbleIcon(b);
+                    }
+                    else if (this._bubbleHero.level < b.level) {
+                        b.kill(this._bubbleHero);
+                        console.log('游戏结束');
+                        break;
+                    }
                 }
             }
-            this._obstacleList = this._obstacleList.filter((ele, index, array) => {
+            for (let i = 0; i < bCount; ++i) {
+                let b = this._bubbleAIList[i];
+                for (let j = i + 1; j < bCount; ++j) {
+                    if (!b.isAlive)
+                        break;
+                    let b2 = this._bubbleAIList[j];
+                    if (!b2.isAlive)
+                        continue;
+                    if (GameUtil.powerDistance(b.x, b.y, b2.x, b2.y) <= Math.pow(b.bubbleSize / 2 + b2.bubbleSize / 2, 2)) {
+                        if (b.level > b2.level) {
+                            b.kill(b2);
+                            this._delBubbleList.push(b2);
+                            this.delBubbleIcon(b2);
+                        }
+                        else if (b.level < b2.level) {
+                            b2.kill(b);
+                            this._delBubbleList.push(b);
+                            this.delBubbleIcon(b);
+                        }
+                    }
+                    else if (GameUtil.powerDistance(b.x, b.y, b2.x, b2.y) <= Math.pow(b.visionRange / 2 + b2.width / 2, 2)) {
+                        b.addVisionBubble(b2);
+                        b2.addVisionBubble(b);
+                    }
+                }
+            }
+            this._bubbleAIList = this._delBubbleList.length > 0 ? this._bubbleAIList.filter((ele, index, array) => {
+                return this._delBubbleList.indexOf(ele) == -1;
+            }) : this._bubbleAIList;
+            this._delObstacleList.length = 0;
+            let count = this._obstacleList.length;
+            bCount = this._bubbleAIList.length;
+            for (let i = 0; i < count; ++i) {
+                let obs = this._obstacleList[i];
+                if (!obs.displayedInStage)
+                    continue;
+                if (this._bubbleHero.isAlive && GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, obs.x, obs.y) <= Math.pow(this._bubbleHero.bubbleSize / 2 + obs.obsSize / 2 + 5, 2)) {
+                    this._bubbleHero.eat(obs);
+                    this.playEmotionAnim();
+                    this._delObstacleList.push(obs);
+                }
+                for (let j = 0; j < bCount; ++j) {
+                    let b = this._bubbleAIList[j];
+                    if (GameUtil.powerDistance(b.x, b.y, obs.x, obs.y) <= Math.pow(b.bubbleSize / 2 + obs.obsSize / 2 + 5, 2)) {
+                        b.eat(obs);
+                        this._delObstacleList.push(obs);
+                    }
+                    else if (GameUtil.powerDistance(b.x, b.y, obs.x, obs.y) <= Math.pow(b.visionRange / 2 + obs.obsSize / 2, 2)) {
+                        b.addVisionObs(obs);
+                    }
+                }
+            }
+            this._obstacleList = this._delObstacleList.length > 0 ? this._obstacleList.filter((ele, index, array) => {
                 return this._delObstacleList.indexOf(ele) == -1;
-            });
+            }) : this._obstacleList;
+        }
+        delBubbleIcon(b) {
+            this._bubbleIconMap.get(b).removeSelf();
+            this._bubbleIconMap.delete(b);
         }
         initPlayers() {
+            this._bubbleAIList = [];
+            this._delBubbleList = [];
+            this._bubbleIconMap = new Map();
+            for (let i = 0; i < GameMap.AI_NUM; ++i) {
+                let idx = Math.floor(Math.random() * Bubble.SKIN_LIST.length);
+                let posX = Bubble.InitSize + Math.floor(Math.random() * (this._boundary.x - 2 * Bubble.InitSize));
+                let posY = Bubble.InitSize + Math.floor(Math.random() * (this._boundary.y - 2 * Bubble.InitSize));
+                let rotation = Math.floor(Math.random() * 360);
+                let ai = BubbleFactory.Create(Bubble.InitSize, idx, true);
+                ai.name = `路人${i}号`;
+                ai.bubbleRotation = rotation;
+                ai.pos(posX, posY);
+                ai.setMoveBoundary(this._boundary.x, this._boundary.y);
+                this._bubbleAIList.push(ai);
+                this.addChild(ai);
+                ai.startAILogic();
+                let icon = new Laya.Sprite();
+                icon.size(GameMap.IconSize, GameMap.IconSize);
+                icon.pivot(icon.width / 2, icon.height / 2);
+                icon.graphics.drawCircle(icon.width / 2, icon.height / 2, icon.width / 2, Bubble.SKIN_LIST[idx]);
+                icon.graphics.fillText(`${i + 1}`, icon.width / 2, 3, '14px Arial', '#000000', 'center');
+                this._bubbleIconMap.set(ai, icon);
+            }
         }
         initObstacles() {
             this._obstacleList = [];
             this._delObstacleList = [];
-            for (let i = 0; i < 100; ++i) {
+            for (let i = 0; i < GameMap.OBS_NUM; ++i) {
                 let size = GameMap.GridSize + Math.floor(Math.random() * GameMap.GridSize);
                 let skinIdx = Math.floor(Math.random() * 8);
-                let x = size / 2 + Math.random() * (this._maxPoint.x - size / 2);
-                let y = size / 2 + Math.random() * (this._maxPoint.y - size / 2);
+                let x = size + Math.random() * (this._boundary.x - 2 * size);
+                let y = size + Math.random() * (this._boundary.y - 2 * size);
                 let obs = ObstacleFactory.Create(skinIdx, size, 1);
                 this._obstacleList.push(obs);
                 obs.pos(x, y);
@@ -859,14 +1162,15 @@
                 return;
             let list = [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
             let idx = Math.floor(Math.random() * list.length);
-            this._emotionAnim.loadAnimation(`chat/anim/emoji_${list[idx]}.ani`, Laya.Handler.create(this, () => {
-                let bound = this._emotionAnim.getGraphicBounds();
-                Laya.stage.addChild(this._emotionAnim);
-                this._emotionAnim.pivot(bound.x + bound.width / 2, bound.y + bound.height / 2);
-                this._emotionAnim.pos(Laya.stage.width / 2, 100);
-                this._emotionAnim.autoPlay = true;
-                Laya.timer.once(1500, this, this.stopEmotionAnim);
-            }), "res/atlas/chat/emoji.atlas");
+            this._emotionAnim.loadAnimation(ResData.getEmotionRes(list[idx]), Laya.Handler.create(this, this.onLoadAnimComplete), ResData.RES_ATLAS_EMOTION);
+        }
+        onLoadAnimComplete() {
+            let bound = this._emotionAnim.getGraphicBounds();
+            Laya.stage.addChild(this._emotionAnim);
+            this._emotionAnim.pivot(bound.x + bound.width / 2, bound.y + bound.height / 2);
+            this._emotionAnim.pos(Laya.stage.width / 2, 100);
+            this._emotionAnim.autoPlay = true;
+            Laya.timer.once(1500, this, this.stopEmotionAnim);
         }
         stopEmotionAnim() {
             this._emotionAnim.clear();
@@ -879,7 +1183,7 @@
             for (let i = 0; i <= row; ++i) {
                 let x0 = 0;
                 let y0 = (i) * GameMap.GridSize;
-                let x1 = this._maxPoint.x;
+                let x1 = this._boundary.x;
                 let y1 = y0;
                 this.graphics.drawLine(x0, y0, x1, y1, GameMap.LineColor, 1);
             }
@@ -887,15 +1191,18 @@
                 let x0 = (i) * GameMap.GridSize;
                 let y0 = 0;
                 let x1 = x0;
-                let y1 = this._maxPoint.y;
+                let y1 = this._boundary.y;
                 this.graphics.drawLine(x0, y0, x1, y1, GameMap.LineColor, 1);
             }
         }
     }
     GameMap.GridSize = 30;
+    GameMap.IconSize = 20;
     GameMap.LineColor = '#000000';
     GameMap.MAP_WIDTH = 2048;
     GameMap.MAP_HEIGHT = 2048;
+    GameMap.AI_NUM = 10;
+    GameMap.OBS_NUM = 100;
 
     class GameControl extends Laya.Script {
         constructor() {
@@ -919,14 +1226,14 @@
         }
         onTouchDown() {
             Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.onTouchMove);
-            this._lastMousePosX = this._map.mouseX;
+            this._lastMousePosX = Laya.stage.mouseX;
             ;
-            this._lastMousePosY = this._map.mouseY;
-            this._bubbleHero.startMove(this._lastMousePosX, this._lastMousePosY);
+            this._lastMousePosY = Laya.stage.mouseY;
+            this._bubbleHero.startMove(this._map.mouseX, this._map.mouseY);
         }
         onTouchMove() {
-            let curMouseX = this._map.mouseX;
-            let curMouseY = this._map.mouseY;
+            let curMouseX = Laya.stage.mouseX;
+            let curMouseY = Laya.stage.mouseY;
             let deltaX = curMouseX - this._lastMousePosX;
             let deltaY = curMouseY - this._lastMousePosY;
             let len = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
@@ -945,25 +1252,11 @@
         onUpdate() {
             this._map.update();
         }
-        checkCollider() {
-            this._delObstacleList.length = 0;
-            let count = this._obstacleList.length;
-            for (let i = 0; i < count; ++i) {
-                let obs = this._obstacleList[i];
-                if (GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, obs.x, obs.y) <= Math.pow(this._bubbleHero.width / 2 + obs.width / 2 + 5, 2)) {
-                    this._bubbleHero.eat(obs.beansNum);
-                    this._delObstacleList.push(obs);
-                    ObstacleFactory.Recycle(obs);
-                }
-            }
-            this._obstacleList = this._obstacleList.filter((ele, index, array) => {
-                return this._delObstacleList.indexOf(ele) == -1;
-            });
-        }
         initMap() {
-            this._map = new GameMap();
+            this._map = GameMap.Instance;
             this._map.init(GameMap.MAP_WIDTH, GameMap.MAP_HEIGHT);
             this._bubbleHero = BubbleFactory.Create(Bubble.InitSize, 0, false);
+            this._bubbleHero.name = "普拉斯";
             this._bubbleHero.pos(Laya.stage.width / 2, Laya.stage.height / 2);
             this._map.addHero(this._bubbleHero);
         }
@@ -1316,7 +1609,9 @@
             Laya.stage.alignV = GameConfig.alignV;
             Laya.stage.alignH = GameConfig.alignH;
             Laya.stage.bgColor = '#eeeeee';
+            Laya.stage.frameRate = Laya.Stage.FRAME_SLOW;
             Laya.URL.exportSceneToJson = GameConfig.exportSceneToJson;
+            Laya.Stat.show(0, 0);
             if (GameConfig.debug || Laya.Utils.getQueryString("debug") == "true")
                 Laya.enableDebugPanel();
             if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"])

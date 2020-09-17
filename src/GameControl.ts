@@ -1,6 +1,5 @@
 import Bubble, { BubbleFactory, BubbleState } from "./Bubble";
 import { GameMap } from "./GameMap";
-import { GameUtil } from "./GameUtil";
 import { Obstacle, ObstacleFactory } from "./Obstacle";
 
 export default class GameControl extends Laya.Script {
@@ -10,8 +9,6 @@ export default class GameControl extends Laya.Script {
     private _lastMousePosY:number;    
     private _map:GameMap;
     private _bubbleHero:Bubble;
-    private _obstacleList:Obstacle[];
-    private _delObstacleList:Obstacle[];
     //触摸滑动距离控制缩放阀值
     public static TouchThreshold:number=8;
     constructor() { super(); }
@@ -41,18 +38,14 @@ export default class GameControl extends Laya.Script {
 
     onTouchDown():void{
         Laya.stage.on(Laya.Event.MOUSE_MOVE,this,this.onTouchMove);
-        this._lastMousePosX=this._map.mouseX;;
-        this._lastMousePosY=this._map.mouseY;
-        this._bubbleHero.startMove(this._lastMousePosX,this._lastMousePosY);
+        this._lastMousePosX=Laya.stage.mouseX;;
+        this._lastMousePosY=Laya.stage.mouseY;
+        this._bubbleHero.startMove(this._map.mouseX,this._map.mouseY);
     }
 
-    // onRightClick():void{
-    //     this._bubbleHero.eatBeans+=1;
-    // }
-
     onTouchMove():void{
-        let curMouseX = this._map.mouseX;
-        let curMouseY = this._map.mouseY;
+        let curMouseX = Laya.stage.mouseX;
+        let curMouseY = Laya.stage.mouseY;
         let deltaX =curMouseX-this._lastMousePosX;
         let deltaY = curMouseY-this._lastMousePosY;
         let len = Math.pow(deltaX,2)+Math.pow(deltaY,2);  
@@ -64,6 +57,7 @@ export default class GameControl extends Laya.Script {
         this._lastMousePosX =curMouseX;
         this._lastMousePosY = curMouseY;
     }
+
     onTouchUp():void{
         Laya.stage.off(Laya.Event.MOUSE_MOVE,this,this.onTouchMove);
         this._bubbleHero.stopMove();
@@ -71,28 +65,13 @@ export default class GameControl extends Laya.Script {
 
     onUpdate():void{
         this._map.update();
-    }
-
-    private checkCollider(){
-        this._delObstacleList.length=0;
-        let count = this._obstacleList.length;
-        for(let i=0;i<count;++i){
-            let obs = this._obstacleList[i];
-            if(GameUtil.powerDistance(this._bubbleHero.x,this._bubbleHero.y,obs.x,obs.y) <= Math.pow(this._bubbleHero.width/2+obs.width/2+5,2)){
-                this._bubbleHero.eat(obs.beansNum);
-                this._delObstacleList.push(obs);
-                ObstacleFactory.Recycle(obs);
-            }
-        }
-        this._obstacleList= this._obstacleList.filter((ele,index,array)=>{
-            return this._delObstacleList.indexOf(ele) == -1;
-        })
-    }    
+    } 
 
     initMap(){
-        this._map = new GameMap();
+        this._map = GameMap.Instance;
         this._map.init(GameMap.MAP_WIDTH,GameMap.MAP_HEIGHT);
         this._bubbleHero = BubbleFactory.Create(Bubble.InitSize,0,false);
+        this._bubbleHero.name = "普拉斯";
         this._bubbleHero.pos(Laya.stage.width/2,Laya.stage.height/2);      
         this._map.addHero(this._bubbleHero);
     }

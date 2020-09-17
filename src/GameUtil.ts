@@ -1,4 +1,4 @@
-import test from "./test";
+
 
 export class GameUtil{
 
@@ -260,5 +260,8 @@ export class GameUtil{
         return Math.pow(x2-x1,2)+Math.pow(y2-y1,2);
     }
 
+    public static clamp(value:number,min:number,max:number):number{
+        return value<min?min: value>max?max:value;
+    }
 
 }
