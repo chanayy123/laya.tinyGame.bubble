@@ -3,3 +3,60 @@ import View=Laya.View;
 import Dialog=Laya.Dialog;
 import Scene=Laya.Scene;
 var REG: Function = Laya.ClassUtils.regClass;
+export module ui.bubble {
+    export class GameRenderUI extends Laya.View {
+		public labelTotalScore:Laya.Label;
+		public labelTime:Laya.Label;
+		public img_bgRankList:Laya.Image;
+		public rankList:Laya.List;
+        public static  uiView:any ={"type":"View","props":{"width":720,"height":67},"compId":2,"child":[{"type":"Image","props":{"skin":"game/img_bg1.png","centerY":0,"centerX":-194,"sizeGrid":"20,25,20,25"},"compId":3,"child":[{"type":"Label","props":{"var":"labelTotalScore","text":"得分:0","fontSize":26,"color":"#ffffff","centerY":0,"centerX":0},"compId":5}]},{"type":"Image","props":{"skin":"game/img_bg1.png","centerY":0,"centerX":35,"sizeGrid":"20,25,20,25"},"compId":4,"child":[{"type":"Label","props":{"y":10,"x":-125,"var":"labelTime","text":"02:59","fontSize":26,"color":"#ffffff","centerY":0,"centerX":0},"compId":6}]},{"type":"Box","props":{"y":54,"width":196,"right":10,"height":280},"compId":15,"child":[{"type":"Image","props":{"var":"img_bgRankList","skin":"game/img_bg2.png","right":0,"left":0,"height":280,"sizeGrid":"10,10,10,10"},"compId":7},{"type":"List","props":{"y":10,"var":"rankList","spaceY":5,"right":0,"repeatY":1,"repeatX":1,"left":0},"compId":8}]}],"loadList":["game/img_bg1.png","game/img_bg2.png"],"loadList3D":[]};
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.createView(GameRenderUI.uiView);
+        }
+    }
+    REG("ui.bubble.GameRenderUI",GameRenderUI);
+    export class GameResultRenderUI extends Laya.View {
+		public img_star:Laya.Image;
+		public labelRank:Laya.Label;
+		public boxHtmlTxt:Laya.Box;
+		public htmlTxt:laya.html.dom.HTMLDivElement;
+		public labelScore:Laya.Label;
+		public labelEnergy:Laya.Label;
+		public btnGet:Laya.Image;
+        public static  uiView:any ={"type":"View","props":{"width":720,"mouseEnabled":true,"height":1280},"compId":2,"child":[{"type":"Image","props":{"top":0,"skin":"game/img_blank.png","right":0,"left":0,"bottom":0,"sizeGrid":"4,4,4,4"},"compId":16},{"type":"Image","props":{"y":259,"x":360,"var":"img_star","skin":"game/img_star.png","rotation":0,"centerX":0,"anchorY":0.5,"anchorX":0.5},"compId":17},{"type":"Image","props":{"y":206,"skin":"game/img_bgTitle.png","centerX":0},"compId":18},{"type":"Label","props":{"var":"labelRank","text":"排名","fontSize":45,"color":"#ffffff","centerY":-391,"centerX":-1},"compId":28},{"type":"Box","props":{"width":600,"var":"boxHtmlTxt","height":100,"centerY":-122,"centerX":0},"compId":20,"child":[{"type":"HTMLDivElement","props":{"x":0,"width":218,"var":"htmlTxt","text":"被XXX吃掉了","height":60,"fontSize":32,"centerY":-159,"runtime":"laya.html.dom.HTMLDivElement"},"compId":19}]},{"type":"Label","props":{"var":"labelScore","text":"积分: 123","fontSize":45,"color":"#ffffff","centerY":24,"centerX":0},"compId":21},{"type":"Image","props":{"skin":"game/img_energy.png","centerY":200,"centerX":-154},"compId":23,"child":[{"type":"Label","props":{"y":-5,"x":33,"var":"labelEnergy","text":"123","fontSize":45,"color":"#ffffff"},"compId":22}]},{"type":"Image","props":{"x":455,"var":"btnGet","skin":"game/img_btnGet.png","centerY":200,"anchorY":0.5,"anchorX":0.5},"compId":24,"child":[{"type":"Script","props":{"playEvent":"mousedown","runtime":"ui.common.ScaleBigUI"},"compId":26},{"type":"Script","props":{"playEvent":"mouseup","runtime":"ui.common.ScaleNormalUI"},"compId":27},{"type":"Script","props":{"playEvent":"mouseout","runtime":"ui.common.ScaleNormalUI"},"compId":29}]}],"loadList":["game/img_blank.png","game/img_star.png","game/img_bgTitle.png","game/img_energy.png","game/img_btnGet.png"],"loadList3D":[]};
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.createView(GameResultRenderUI.uiView);
+        }
+    }
+    REG("ui.bubble.GameResultRenderUI",GameResultRenderUI);
+    export class RankItemRenderUI extends Laya.View {
+		public labelName:Laya.Label;
+		public labelScore:Laya.Label;
+		public icon:Laya.Sprite;
+        public static  uiView:any ={"type":"View","props":{"x":0,"width":180,"height":20},"compId":2,"child":[{"type":"Label","props":{"y":0,"width":90,"var":"labelName","text":"玩家姓名","height":20,"fontSize":20,"color":"#ffffff","centerX":0,"align":"center"},"compId":3},{"type":"Label","props":{"y":0,"x":0,"width":49,"var":"labelScore","text":"10","right":0,"height":20,"fontSize":20,"color":"#ffffff","align":"center"},"compId":4},{"type":"Sprite","props":{"y":0,"x":10,"width":20,"var":"icon","height":20},"compId":9}],"loadList":[],"loadList3D":[]};
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.createView(RankItemRenderUI.uiView);
+        }
+    }
+    REG("ui.bubble.RankItemRenderUI",RankItemRenderUI);
+}
+export module ui.common {
+    export class ScaleBigUI extends Laya.EffectAnimation {
+		public ani1:Laya.FrameAnimation;
+        public static  uiView:any ={"type":"View","props":{},"compId":2,"child":[{"type":"Image","props":{"skin":"game/img_btnGet.png"},"compId":3}],"animations":[{"nodes":[{"target":3,"keyframes":{"scaleY":[{"value":1,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleY","index":0},{"value":1.2,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleY","index":8}],"scaleX":[{"value":1,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleX","index":0},{"value":1.2,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleX","index":8}]}}],"name":"ani1","id":1,"frameRate":24,"action":0}],"loadList":["game/img_btnGet.png"],"loadList3D":[]};
+        constructor(){ super();this.effectData =ui.common.ScaleBigUI.uiView;}
+    }
+    REG("ui.common.ScaleBigUI",ScaleBigUI);
+    export class ScaleNormalUI extends Laya.EffectAnimation {
+		public ani1:Laya.FrameAnimation;
+        public static  uiView:any ={"type":"View","props":{},"compId":2,"child":[{"type":"Image","props":{"skin":"game/img_btnGet.png"},"compId":3}],"animations":[{"nodes":[{"target":3,"keyframes":{"scaleY":[{"value":1,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleY","index":0},{"value":1.2,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleY","index":1},{"value":1,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleY","index":8}],"scaleX":[{"value":1,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleX","index":0},{"value":1.2,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleX","index":1},{"value":1,"tweenMethod":"linearNone","tween":true,"target":3,"key":"scaleX","index":8}]}}],"name":"ani1","id":1,"frameRate":24,"action":0}],"loadList":["game/img_btnGet.png"],"loadList3D":[]};
+        constructor(){ super();this.effectData =ui.common.ScaleNormalUI.uiView;}
+    }
+    REG("ui.common.ScaleNormalUI",ScaleNormalUI);
+}

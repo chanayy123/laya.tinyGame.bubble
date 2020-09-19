@@ -198,16 +198,8 @@ export class GameUtil{
             Laya.timer.once(time,this,()=>{
                 resolve();
             })
-        })
-    }
-
-    public static async tween(){
-        console.log("----------tween-------------")
-        while(true){
-            await this.wait(1000);
-            console.log("当前时间戳: "+new Date().getTime());
-        }
-    }    
+        });
+    } 
 
     public static getBezieratX(x0:number,x1:number,x2:number, t: number): number {
 		t = Math.min(t, 1);
@@ -262,6 +254,17 @@ export class GameUtil{
 
     public static clamp(value:number,min:number,max:number):number{
         return value<min?min: value>max?max:value;
+    }
+    /**
+     * 把时间格式化: 分:秒
+     * @param time 单位s
+     */
+    public static fmtTime(seconds:number){
+        let min = Math.floor(seconds/60);
+        let sec = seconds % 60;
+        let minStr = min<10? `0${min}`:min;
+        let secStr = sec<10? `0${sec}`:sec;
+        return `${minStr}:${secStr}`;
     }
 
 }

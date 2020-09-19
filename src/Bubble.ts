@@ -2,6 +2,21 @@
 import { GameUtil } from "./GameUtil";
 import { Obstacle, ObstacleFactory } from "./Obstacle";
 
+export class BubbleData{
+    public eatBeans:number;
+    public rank:number;
+    public isAI:boolean;
+    public name:string;
+    public color:string;
+    constructor(){
+        this.name="";
+        this.eatBeans=0;
+        this.rank =0;
+        this.color="";
+        this.isAI=true;
+    }
+}
+
 export default class Bubble extends Laya.Sprite{
     public static EMOTION_IDLIST=[1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
     public static SKIN_LIST= ['#ff0000','#ff7d00','#ffff00','#00ff00','0000ff','00ffff','ff00ff'];
@@ -11,6 +26,7 @@ export default class Bubble extends Laya.Sprite{
     public static AddSizeByCircle=2;
     public static AddSizeByLevel=1;
     public static InitSize=50;
+    public static InitSpeed = 6;
     private _shapeSp:Laya.Sprite;
     //移动形状顶点列表
     private _moveShape:BubbleShape;
@@ -24,13 +40,12 @@ export default class Bubble extends Laya.Sprite{
     private _curShape:BubbleShape;
     private _initBubbleSize:number;
     private _bubbleSize:number;
-    private _isAI:boolean;
     //视野范围
     private _visionRange:number;
     private _visionBubbleList:Bubble[];
     private _visionObsList:Obstacle[];
     //移动速度
-    private _moveSpeed:number=10;
+    private _moveSpeed:number=Bubble.InitSpeed;
     //移动范围
     private _moveBoundary:Laya.Point;
     //距上一帧的移动偏移量
@@ -42,10 +57,11 @@ export default class Bubble extends Laya.Sprite{
     //形状变换标志位
     private _isTransforming:boolean;
     private _level:number;
-    private _eatBeans:number;
     private _starShapeSp:Laya.Sprite;
     //AI泡泡追踪目标
     private _aimTarget:Laya.Sprite;
+    private _attacker:Bubble;
+    private _bubbleData:BubbleData;
     
     constructor(){
         super();
@@ -54,12 +70,12 @@ export default class Bubble extends Laya.Sprite{
     init(size:number,skin:number,isAI:boolean){
         this._shapeSp =  this._shapeSp || new Laya.Sprite();
         this.addChild(this._shapeSp);
+        this._bubbleData = this._bubbleData || new BubbleData();
         this.initStar(skin);
         this._initBubbleSize = size;
         this._visionRange = Laya.stage.width;
-        this._skinIndex =skin;
-        this._isAI = isAI;
-        this._eatBeans=0;
+        this.skinIndex =skin;
+        this.isAI = isAI;
         this.level=0;
         this.setMoveDelta(0,0);
         this.State = BubbleState.NORMAL;
@@ -150,8 +166,41 @@ export default class Bubble extends Laya.Sprite{
         this.updateShape(value,deltaSize);
     }
 
+    public get attacker():Bubble{
+        return this._attacker;
+    }
+
+    public set attacker(value:Bubble){
+        this._attacker = value;
+    }
+
+    public get isAI():boolean{
+        return this._bubbleData.isAI;
+    }
+
+    public set isAI(value:boolean){
+        this._bubbleData.isAI = value;
+    }
+
+    public get rank():number{
+        return this._bubbleData.rank;
+    }
+
+    public set rank(value:number){
+        this._bubbleData.rank = value;
+    }
+
     public get visionRange():number{
         return this._visionRange;
+    }
+
+    public get skinIndex():number{
+        return this._skinIndex;
+    }
+
+    public set skinIndex(value:number){
+        this._skinIndex = value;
+        this._bubbleData.color = Bubble.SKIN_LIST[value];
     }
 
     public set aimTarget(value:Laya.Sprite){
@@ -172,13 +221,26 @@ export default class Bubble extends Laya.Sprite{
         return this._bubbleSize;
     }
 
+    public get bubbleData():BubbleData{
+        return this._bubbleData;
+    }
+
+    public set bubbleName(value:string){
+        this.name = value;
+        this._bubbleData.name = value;
+    }
+
+    public get bubbleName():string{
+        return this._bubbleData.name;
+    }
+
     public set eatBeans(value:number){
-        this._eatBeans = value;
+        this._bubbleData.eatBeans = value;
         this.level = Math.floor(value/Bubble.AddLevelByBeans);
     }
 
     public get eatBeans():number{
-        return this._eatBeans;
+        return this._bubbleData.eatBeans ;
     }
 
     public set level(value:number){
@@ -256,15 +318,19 @@ export default class Bubble extends Laya.Sprite{
     }
 
     public set State(value:BubbleState){
-        if(this.State == value) return;
-        if(this._state == BubbleState.INVALID && value == BubbleState.NORMAL){
+        if(this.State == value){
+            if(value == BubbleState.SPIKE) console.log("击杀状态中:再次击杀");
+            return;
+        }
+        let preState = this._state;
+        this._state = value;
+        if(preState == BubbleState.INVALID && value == BubbleState.NORMAL){
             this._curShape = this._normalShape;
             this.draw(this._normalShape);    
         }else{
-            this.checkTransformShape(this.getShape(this._state),this.getShape(value),Bubble.TransformTime,this.getEaseFun(this._state,value));
+            this.checkTransformShape(this.getShape(preState),this.getShape(value),Bubble.TransformTime,this.getEaseFun(preState,value));
         }
-        this.onStateChange(this.State,value);
-        this._state = value;
+        this.onStateChange(preState,value);
     }
 
     public get State():BubbleState{
@@ -455,9 +521,9 @@ export default class Bubble extends Laya.Sprite{
     }
 
     public async startAILogic(){
-        if(!this._isAI) return;
+        if(!this.isAI) return;
         //当泡泡移除舞台就结束协程
-        while (this.displayedInStage) {
+        while (this.isAlive) {
             let baseTime =0;
             if(this.isOnBoundary){
                 this.bubbleRotation = Math.floor(Math.random()*360);
@@ -519,7 +585,7 @@ export default class Bubble extends Laya.Sprite{
     }
 
     public kill(b:Bubble){
-        console.log(`玩家【${this.name}】击杀了玩家【${b.name}】`)
+        b.attacker = this;
         b.State = BubbleState.DEAD;
         this.playKillAnim();
     }

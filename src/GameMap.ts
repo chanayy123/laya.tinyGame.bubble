@@ -1,16 +1,16 @@
-import Bubble, { BubbleFactory, BubbleState } from "./Bubble";
+import Bubble, { BubbleData, BubbleFactory, BubbleState } from "./Bubble";
 import { GameUtil } from "./GameUtil";
 import { Obstacle, ObstacleFactory } from "./Obstacle";
 import { ResData } from "./ResData";
 
 export class GameMap extends Laya.Sprite{
     private static _instance:GameMap;
-    public static GridSize =30;
+    public static GridSize =50;
     public static IconSize = 20;
     public static LineColor = '#000000';
     public static MAP_WIDTH = 2048;
     public static MAP_HEIGHT = 2048;
-    public static AI_NUM=10;
+    public static AI_NUM=9;
     public static OBS_NUM=100;
     private _bubbleHero:Bubble;
     private _bubbleAIList:Bubble[];
@@ -18,13 +18,15 @@ export class GameMap extends Laya.Sprite{
     private _delBubbleList:BubbleFactory[];
     private _obstacleList:Obstacle[];
     private _delObstacleList:Obstacle[];
-    private _bubbleList:Bubble[]=[];
+    private _rankDataList:BubbleData[];
     private _boundary:Laya.Point;
     private _emotionAnim:Laya.Animation;
+    //玩家吃豆子回调
+    public eatHandler:Laya.Handler;
     //玩家击杀回调
-    public KillHandler:Laya.Handler;
+    public killHandler:Laya.Handler;
     //玩家等级排行刷新回调
-    public UpdateRankHandler:Laya.Handler;
+    public updateRankHandler:Laya.Handler;
     private constructor(){
         super()
     }
@@ -37,7 +39,6 @@ export class GameMap extends Laya.Sprite{
     }
 
     public init(w:number,h:number){
-        Laya.stage.addChild(this);
         this.size(w,h);
         this._boundary = new Laya.Point();
         this._boundary.x = Math.ceil(this.width/GameMap.GridSize)*GameMap.GridSize;
@@ -59,6 +60,40 @@ export class GameMap extends Laya.Sprite{
         this.checkScrollMap(this._bubbleHero.moveDelta.x,this._bubbleHero.moveDelta.y);
         this.checkCollider();
         this.checkOutOfStage();
+        this.checkSpawnObs(GameMap.OBS_NUM*0.3)
+    }
+
+    private refreshRank(){
+        this._rankDataList = this._rankDataList || [];
+        this._rankDataList.length=0;
+        for(let i=0;i<this._bubbleAIList.length;++i){
+            this._rankDataList.push(this._bubbleAIList[i].bubbleData);
+        }
+        if(this._bubbleHero){
+            this._rankDataList.push(this._bubbleHero.bubbleData);
+        }
+        this._rankDataList.sort((l,r)=>r.eatBeans-l.eatBeans);
+        this._bubbleHero.rank = this._rankDataList.findIndex((value,index,list)=>!value.isAI)+1;
+        this.updateRankHandler && this.updateRankHandler.runWith(this._rankDataList);
+    }
+
+    private checkSpawnObs(minNum:number){
+        if(this._obstacleList.length < minNum){
+            let addNum = Math.random()*20;
+            for(let i=0;i<addNum;++i){
+                let size = GameMap.GridSize/2+Math.floor(Math.random()*GameMap.GridSize/2)
+                let skinIdx = Math.floor(Math.random()*8)
+                let x =  size+ Math.random()*(this._boundary.x-2*size);
+                let y = size+ Math.random()*(this._boundary.y-2*size);
+                let obs = ObstacleFactory.Create(skinIdx,size,1);
+                obs.pos(x,y);
+                this.addChild(obs);
+                this._obstacleList.push(obs);
+                if(this._obstacleList.length >= GameMap.OBS_NUM){
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -164,11 +199,10 @@ export class GameMap extends Laya.Sprite{
             if(!b.isAlive) continue;
             if(GameUtil.powerDistance(this._bubbleHero.x,this._bubbleHero.y,b.x,b.y) <= Math.pow(this._bubbleHero.bubbleSize/2+b.bubbleSize/2,2)){
                 if(this._bubbleHero.level >  b.level){
-                    this._bubbleHero.kill(b);
+                    this.handleKill(this._bubbleHero,b);
                     this._delBubbleList.push(b);
-                    this.delBubbleIcon(b);
                 }else if(this._bubbleHero.level < b.level){
-                    b.kill(this._bubbleHero);
+                    this.handleKill(b,this._bubbleHero);
                     console.log('游戏结束');
                     break;
                 }
@@ -183,13 +217,11 @@ export class GameMap extends Laya.Sprite{
                 if(!b2.isAlive) continue;
                 if(GameUtil.powerDistance(b.x,b.y,b2.x,b2.y) <= Math.pow(b.bubbleSize/2+b2.bubbleSize/2,2)){
                     if(b.level > b2.level){
-                        b.kill(b2);
+                        this.handleKill(b,b2);
                         this._delBubbleList.push(b2);
-                        this.delBubbleIcon(b2);
                     }else if(b.level < b2.level){
-                        b2.kill(b);
+                        this.handleKill(b2,b);
                         this._delBubbleList.push(b);
-                        this.delBubbleIcon(b);
                     }
                 }else if(GameUtil.powerDistance(b.x,b.y,b2.x,b2.y) <= Math.pow(b.visionRange/2+b2.width/2,2)){
                     b.addVisionBubble(b2);
@@ -208,14 +240,13 @@ export class GameMap extends Laya.Sprite{
             let obs = this._obstacleList[i];
             if(!obs.displayedInStage) continue;
             if(this._bubbleHero.isAlive && GameUtil.powerDistance(this._bubbleHero.x,this._bubbleHero.y,obs.x,obs.y) <= Math.pow(this._bubbleHero.bubbleSize/2+obs.obsSize/2+5,2)){
-                this._bubbleHero.eat(obs);
-                this.playEmotionAnim();
+                this.handleEatBeans(this._bubbleHero,obs);
                 this._delObstacleList.push(obs);
             }
             for(let j=0;j<bCount;++j){
                 let b = this._bubbleAIList[j];
                 if(GameUtil.powerDistance(b.x,b.y,obs.x,obs.y) <= Math.pow(b.bubbleSize/2+obs.obsSize/2+5,2)){
-                    b.eat(obs);
+                    this.handleEatBeans(b,obs);
                     this._delObstacleList.push(obs);
                 }else if(GameUtil.powerDistance(b.x,b.y,obs.x,obs.y) <= Math.pow(b.visionRange/2+obs.obsSize/2,2)){
                     b.addVisionObs(obs);
@@ -225,10 +256,26 @@ export class GameMap extends Laya.Sprite{
         this._obstacleList= this._delObstacleList.length>0? this._obstacleList.filter((ele,index,array)=>{
             return this._delObstacleList.indexOf(ele) == -1;
         }):this._obstacleList;
+
+        if(this._delBubbleList.length>0 || this._delObstacleList.length>0){
+            this.refreshRank();
+        }
     }    
 
+    handleEatBeans(src:Bubble,dst:Obstacle){
+        src.eat(dst);
+        this.eatHandler && this.eatHandler.runWith([src,dst]);
+    }
+
+    handleKill(src:Bubble,dst:Bubble){
+        src.kill(dst);
+        this.killHandler && this.killHandler.runWith([src,dst]);
+        this.delBubbleIcon(dst);
+    }
+
     delBubbleIcon(b:Bubble){
-        this._bubbleIconMap.get(b).removeSelf();
+        let icon = this._bubbleIconMap.get(b);
+        icon && icon.removeSelf();
         this._bubbleIconMap.delete(b);
     }
 
@@ -242,7 +289,7 @@ export class GameMap extends Laya.Sprite{
             let posY = Bubble.InitSize+ Math.floor(Math.random()*(this._boundary.y-2*Bubble.InitSize));
             let rotation = Math.floor(Math.random()*360)
             let ai = BubbleFactory.Create(Bubble.InitSize,idx,true);
-            ai.name = `路人${i}号`;
+            ai.bubbleName = `路人${i}号`;
             ai.bubbleRotation = rotation;
             ai.pos(posX,posY);
             ai.setMoveBoundary(this._boundary.x,this._boundary.y);
@@ -263,7 +310,7 @@ export class GameMap extends Laya.Sprite{
         this._obstacleList = [];
         this._delObstacleList=[];
         for(let i=0;i<GameMap.OBS_NUM;++i){
-            let size = GameMap.GridSize+Math.floor(Math.random()*GameMap.GridSize)
+            let size = GameMap.GridSize/2+Math.floor(Math.random()*GameMap.GridSize/2)
             let skinIdx = Math.floor(Math.random()*8)
             let x =  size+ Math.random()*(this._boundary.x-2*size);
             let y = size+ Math.random()*(this._boundary.y-2*size);
@@ -272,29 +319,6 @@ export class GameMap extends Laya.Sprite{
             obs.pos(x,y);
             this.addChild(obs);
         }
-    }
-
-    private playEmotionAnim(){
-        //随机切换动画
-        if(Math.random()*100 > 30) return;
-        let list= [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
-        let idx = Math.floor(Math.random()*list.length);
-        this._emotionAnim.loadAnimation(ResData.getEmotionRes(list[idx]),Laya.Handler.create(this,this.onLoadAnimComplete),ResData.RES_ATLAS_EMOTION); 
-    }
-
-    private onLoadAnimComplete(){
-        let bound = this._emotionAnim.getGraphicBounds();
-        Laya.stage.addChild(this._emotionAnim); 
-        this._emotionAnim.pivot(bound.x+bound.width/2,bound.y+bound.height/2)
-        this._emotionAnim.pos(Laya.stage.width/2,100);
-        this._emotionAnim.autoPlay=true;
-        Laya.timer.once(1500,this,this.stopEmotionAnim)
-    }
-
-
-    private stopEmotionAnim(){
-        this._emotionAnim.clear();
-        this._emotionAnim.removeSelf();
     }
 
     private draw(){

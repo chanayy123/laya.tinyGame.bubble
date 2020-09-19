@@ -51,6 +51,14 @@ P 43B0D1A1 bubble_5.png
 P C5820774 bubble_6.png
 P 947A03D7 bubble_7.png
 P 274B87F5 bubble_8.png
+P BD7CFB52 img_bg1.png
+P D320E8A9 img_bg2.png
+R 9ACDCEA9 img_bgKill.png
+P 4BED5F96 img_bgTitle.png
+P BA28BD65 img_blank.png
+P 8C371FC4 img_btnGet.png
+P CF7D4DA2 img_energy.png
+P F9DB3575 img_star.png
 D chat/emoji
 P 69397704 emoji_1-obj-1.png
 P 9BCE4EFA emoji_1-obj-2.png
