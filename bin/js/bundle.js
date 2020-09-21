@@ -991,7 +991,6 @@
             this._boundary = new Laya.Point();
             this._boundary.x = Math.ceil(this.width / GameMap.GridSize) * GameMap.GridSize;
             this._boundary.y = Math.ceil(this.height / GameMap.GridSize) * GameMap.GridSize;
-            this._emotionAnim = new Laya.Animation();
             this.draw();
             this.initPlayers();
             this.initObstacles();
@@ -1031,7 +1030,7 @@
                     let y = size + Math.random() * (this._boundary.y - 2 * size);
                     let obs = ObstacleFactory.Create(skinIdx, size, 1);
                     obs.pos(x, y);
-                    this.addChild(obs);
+                    this._obsLayer.addChild(obs);
                     this._obstacleList.push(obs);
                     if (this._obstacleList.length >= GameMap.OBS_NUM) {
                         break;
@@ -1232,6 +1231,9 @@
         initObstacles() {
             this._obstacleList = [];
             this._delObstacleList = [];
+            this._obsLayer = new Laya.Sprite;
+            this._obsLayer.cacheAs = "bitmap";
+            this._obsLayer.staticCache = true;
             for (let i = 0; i < GameMap.OBS_NUM; ++i) {
                 let size = GameMap.GridSize / 2 + Math.floor(Math.random() * GameMap.GridSize / 2);
                 let skinIdx = Math.floor(Math.random() * 8);
@@ -1240,8 +1242,9 @@
                 let obs = ObstacleFactory.Create(skinIdx, size, 1);
                 this._obstacleList.push(obs);
                 obs.pos(x, y);
-                this.addChild(obs);
+                this._obsLayer.addChild(obs);
             }
+            this.addChild(this._obsLayer);
         }
         draw() {
             this.graphics.clear();
@@ -1280,7 +1283,6 @@
             this.initMap();
             this.initUI();
             this.initEffect();
-            this.owner.autoDestroyAtClosed = true;
         }
         onEnable() {
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
@@ -1362,8 +1364,11 @@
             if (dst == this._bubbleHero) {
                 this.gameState = GameState.END;
             }
-            else {
+            else if (src == this._bubbleHero) {
                 this.playEmotionAnim();
+            }
+            else {
+                this._gameUI.showKillTip(src.name, dst.name);
             }
         }
         onRefreshRankList(...data) {
@@ -1422,6 +1427,7 @@
         playEmotionAnim() {
             if (Math.random() * 100 > 30)
                 return;
+            console.log("播放表情动画");
             let list = [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
             let idx = Math.floor(Math.random() * list.length);
             this._emotionAnim.loadAnimation(ResData.getEmotionRes(list[idx]), Laya.Handler.create(this, this.onLoadAnimComplete), ResData.RES_ATLAS_EMOTION);
@@ -1462,7 +1468,7 @@
                     this.createView(GameRenderUI.uiView);
                 }
             }
-            GameRenderUI.uiView = { "type": "View", "props": { "width": 720, "height": 67 }, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_bg1.png", "centerY": 0, "centerX": -194, "sizeGrid": "20,25,20,25" }, "compId": 3, "child": [{ "type": "Label", "props": { "var": "labelTotalScore", "text": "得分:0", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 5 }] }, { "type": "Image", "props": { "skin": "game/img_bg1.png", "centerY": 0, "centerX": 35, "sizeGrid": "20,25,20,25" }, "compId": 4, "child": [{ "type": "Label", "props": { "y": 10, "x": -125, "var": "labelTime", "text": "02:59", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 6 }] }, { "type": "Box", "props": { "y": 54, "width": 196, "right": 10, "height": 280 }, "compId": 15, "child": [{ "type": "Image", "props": { "var": "img_bgRankList", "skin": "game/img_bg2.png", "right": 0, "left": 0, "height": 280, "sizeGrid": "10,10,10,10" }, "compId": 7 }, { "type": "List", "props": { "y": 10, "var": "rankList", "spaceY": 5, "right": 0, "repeatY": 1, "repeatX": 1, "left": 0 }, "compId": 8 }] }], "loadList": ["game/img_bg1.png", "game/img_bg2.png"], "loadList3D": [] };
+            GameRenderUI.uiView = { "type": "View", "props": { "width": 720, "height": 67 }, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_bg1.png", "centerY": 0, "centerX": -194, "sizeGrid": "20,25,20,25" }, "compId": 3, "child": [{ "type": "Label", "props": { "var": "labelTotalScore", "text": "得分:0", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 5 }] }, { "type": "Image", "props": { "skin": "game/img_bg1.png", "centerY": 0, "centerX": 35, "sizeGrid": "20,25,20,25" }, "compId": 4, "child": [{ "type": "Label", "props": { "y": 10, "x": -125, "var": "labelTime", "text": "02:59", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 6 }] }, { "type": "Box", "props": { "y": 80, "width": 196, "right": 10, "height": 280 }, "compId": 15, "child": [{ "type": "Image", "props": { "var": "img_bgRankList", "skin": "game/img_bg2.png", "right": 0, "left": 0, "height": 280, "sizeGrid": "10,10,10,10" }, "compId": 7 }, { "type": "List", "props": { "y": 10, "var": "rankList", "spaceY": 5, "right": 0, "repeatY": 1, "repeatX": 1, "left": 0 }, "compId": 8 }] }, { "type": "Image", "props": { "var": "imgKill", "top": 20, "skin": "game/img_bgKill.png", "centerX": 0 }, "compId": 16, "child": [{ "type": "Label", "props": { "y": 109, "x": 217, "width": 103, "var": "labelSrc", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff" }, "compId": 17 }, { "type": "Label", "props": { "y": 167, "x": 287, "width": 163, "var": "labelDst", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff", "align": "right" }, "compId": 18 }, { "type": "Image", "props": { "y": 111, "x": 273.013671875, "skin": "game/img_txtEat.png" }, "compId": 19 }] }], "loadList": ["game/img_bg1.png", "game/img_bg2.png", "game/img_bgKill.png", "game/img_txtEat.png"], "loadList3D": [] };
             bubble.GameRenderUI = GameRenderUI;
             REG("ui.bubble.GameRenderUI", GameRenderUI);
             class GameResultRenderUI extends Laya.View {
@@ -1500,7 +1506,7 @@
                     this.effectData = ui.common.ScaleBigUI.uiView;
                 }
             }
-            ScaleBigUI.uiView = { "type": "View", "props": {}, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_btnGet.png" }, "compId": 3 }], "animations": [{ "nodes": [{ "target": 3, "keyframes": { "scaleY": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 8 }], "scaleX": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 8 }] } }], "name": "ani1", "id": 1, "frameRate": 24, "action": 0 }], "loadList": ["game/img_btnGet.png"], "loadList3D": [] };
+            ScaleBigUI.uiView = { "type": "View", "props": {}, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_btnGet.png" }, "compId": 3 }], "animations": [{ "nodes": [{ "target": 3, "keyframes": { "scaleY": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 5 }], "scaleX": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 5 }] } }], "name": "ani1", "id": 1, "frameRate": 24, "action": 0 }], "loadList": ["game/img_btnGet.png"], "loadList3D": [] };
             common.ScaleBigUI = ScaleBigUI;
             REG("ui.common.ScaleBigUI", ScaleBigUI);
             class ScaleNormalUI extends Laya.EffectAnimation {
@@ -1509,7 +1515,7 @@
                     this.effectData = ui.common.ScaleNormalUI.uiView;
                 }
             }
-            ScaleNormalUI.uiView = { "type": "View", "props": {}, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_btnGet.png" }, "compId": 3 }], "animations": [{ "nodes": [{ "target": 3, "keyframes": { "scaleY": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 1 }, { "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 8 }], "scaleX": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 1 }, { "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 8 }] } }], "name": "ani1", "id": 1, "frameRate": 24, "action": 0 }], "loadList": ["game/img_btnGet.png"], "loadList3D": [] };
+            ScaleNormalUI.uiView = { "type": "View", "props": {}, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_btnGet.png" }, "compId": 3 }], "animations": [{ "nodes": [{ "target": 3, "keyframes": { "scaleY": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 1 }, { "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleY", "index": 5 }], "scaleX": [{ "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 0 }, { "value": 1.2, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 1 }, { "value": 1, "tweenMethod": "linearNone", "tween": true, "target": 3, "key": "scaleX", "index": 5 }] } }], "name": "ani1", "id": 1, "frameRate": 24, "action": 0 }], "loadList": ["game/img_btnGet.png"], "loadList3D": [] };
             common.ScaleNormalUI = ScaleNormalUI;
             REG("ui.common.ScaleNormalUI", ScaleNormalUI);
         })(common = ui.common || (ui.common = {}));
@@ -1526,6 +1532,7 @@
             this.rankList.itemRender = ui.bubble.RankItemRenderUI;
             this.rankList.renderHandler = new Laya.Handler(this, this.onItemRender);
             this.rankList.array = [];
+            this.imgKill.visible = false;
         }
         onItemRender(cell, index) {
             let data = cell.dataSource;
@@ -1546,6 +1553,17 @@
         }
         showLeftTime(time) {
             this.labelTime.text = GameUtil.fmtTime(time);
+        }
+        showKillTip(srcName, dstName, duration = 2000) {
+            this.imgKill.visible = true;
+            this.labelSrc.text = srcName;
+            this.labelDst.text = dstName;
+            Laya.timer.clearAll(this);
+            Laya.timer.once(duration, this, this.hideKillTip);
+        }
+        hideKillTip() {
+            this.imgKill.visible = false;
+            this.imgKill.activeInHierarchy;
         }
     }
 
@@ -1942,6 +1960,8 @@
                 Laya.enableDebugPanel();
             if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"])
                 Laya["PhysicsDebugDraw"].enable();
+            if (GameConfig.stat)
+                Laya.Stat.show();
             Laya.alertGlobalError(true);
             Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
         }

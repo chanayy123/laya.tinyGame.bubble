@@ -14,6 +14,7 @@ export default class GameUI extends ui.bubble.GameRenderUI{
         this.rankList.itemRender = ui.bubble.RankItemRenderUI;
         this.rankList.renderHandler = new Laya.Handler(this,this.onItemRender);
         this.rankList.array=[];
+        this.imgKill.visible=false;
     }
 
     private onItemRender(cell:ui.bubble.RankItemRenderUI,index:number){
@@ -39,6 +40,18 @@ export default class GameUI extends ui.bubble.GameRenderUI{
 
     showLeftTime(time:number){
         this.labelTime.text =  GameUtil.fmtTime(time);
+    }
+
+    showKillTip(srcName:string,dstName:string,duration:number=2000){
+        this.imgKill.visible=true;
+        this.labelSrc.text = srcName;
+        this.labelDst.text = dstName;
+        Laya.timer.clearAll(this);
+        Laya.timer.once(duration,this,this.hideKillTip);
+    }
+
+    hideKillTip(){
+        this.imgKill.visible=false;this.imgKill.activeInHierarchy
     }
 
 

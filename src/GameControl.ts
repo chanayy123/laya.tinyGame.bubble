@@ -29,7 +29,6 @@ export default class GameControl extends Laya.Script {
         this.initMap();
         this.initUI();
         this.initEffect();
-        (this.owner as Laya.Scene).autoDestroyAtClosed=true;
     }
 
     onEnable(): void {
@@ -120,8 +119,10 @@ export default class GameControl extends Laya.Script {
         console.log(`玩家【${src.name}】击杀了玩家【${dst.name}】`)
         if(dst == this._bubbleHero){
             this.gameState = GameState.END;
-        }else{
+        }else if(src == this._bubbleHero){
             this.playEmotionAnim();
+        }else{
+            this._gameUI.showKillTip(src.name,dst.name);
         }
     }
 
@@ -187,6 +188,7 @@ export default class GameControl extends Laya.Script {
     private playEmotionAnim(){
         //随机切换动画
         if(Math.random()*100 > 30) return;
+        console.log("播放表情动画")
         let list= [1, 10, 11, 13, 15, 16, 17, 18, 19, 2, 21, 23, 27, 4, 8, 9];
         let idx = Math.floor(Math.random()*list.length);
         this._emotionAnim.loadAnimation(ResData.getEmotionRes(list[idx]),Laya.Handler.create(this,this.onLoadAnimComplete),ResData.RES_ATLAS_EMOTION); 

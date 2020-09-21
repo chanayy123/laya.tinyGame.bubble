@@ -18,9 +18,9 @@ export class GameMap extends Laya.Sprite{
     private _delBubbleList:BubbleFactory[];
     private _obstacleList:Obstacle[];
     private _delObstacleList:Obstacle[];
+    private _obsLayer:Laya.Sprite;
     private _rankDataList:BubbleData[];
     private _boundary:Laya.Point;
-    private _emotionAnim:Laya.Animation;
     //玩家吃豆子回调
     public eatHandler:Laya.Handler;
     //玩家击杀回调
@@ -43,7 +43,6 @@ export class GameMap extends Laya.Sprite{
         this._boundary = new Laya.Point();
         this._boundary.x = Math.ceil(this.width/GameMap.GridSize)*GameMap.GridSize;
         this._boundary.y = Math.ceil(this.height/GameMap.GridSize)*GameMap.GridSize;
-        this._emotionAnim = new Laya.Animation();
         this.draw();
         this.initPlayers();
         this.initObstacles();
@@ -87,7 +86,7 @@ export class GameMap extends Laya.Sprite{
                 let y = size+ Math.random()*(this._boundary.y-2*size);
                 let obs = ObstacleFactory.Create(skinIdx,size,1);
                 obs.pos(x,y);
-                this.addChild(obs);
+                this._obsLayer.addChild(obs);
                 this._obstacleList.push(obs);
                 if(this._obstacleList.length >= GameMap.OBS_NUM){
                     break;
@@ -309,6 +308,8 @@ export class GameMap extends Laya.Sprite{
     initObstacles(){
         this._obstacleList = [];
         this._delObstacleList=[];
+        this._obsLayer = new Laya.Sprite;
+        this._obsLayer.cacheAs = "bitmap";
         for(let i=0;i<GameMap.OBS_NUM;++i){
             let size = GameMap.GridSize/2+Math.floor(Math.random()*GameMap.GridSize/2)
             let skinIdx = Math.floor(Math.random()*8)
@@ -317,8 +318,9 @@ export class GameMap extends Laya.Sprite{
             let obs = ObstacleFactory.Create(skinIdx,size,1);
             this._obstacleList.push(obs);
             obs.pos(x,y);
-            this.addChild(obs);
+            this._obsLayer.addChild(obs);
         }
+        this.addChild(this._obsLayer);
     }
 
     private draw(){

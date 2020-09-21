@@ -56,7 +56,7 @@
                                 "tween":true,
                                 "target":3,
                                 "key":"scaleY",
-                                "index":8
+                                "index":5
                             }],
                         "scaleX":[
                             {
@@ -81,7 +81,7 @@
                                 "tween":true,
                                 "target":3,
                                 "key":"scaleX",
-                                "index":8
+                                "index":5
                             }]
                     }
                 }],
