@@ -29,6 +29,8 @@ export default class GameControl extends Laya.Script {
         this.initMap();
         this.initUI();
         this.initEffect();
+        (this.owner as Laya.Scene).autoDestroyAtClosed=true;
+        EventSource
     }
 
     onEnable(): void {
@@ -94,7 +96,7 @@ export default class GameControl extends Laya.Script {
         this._map.init(GameMap.MAP_WIDTH,GameMap.MAP_HEIGHT);
         this.owner.addChildAt(this._map,0);
         this._bubbleHero = BubbleFactory.Create(Bubble.InitSize,0,false);
-        this._bubbleHero.bubbleName = "我";
+        this._bubbleHero.bubbleName = "Molly(我)";
         this._bubbleHero.pos(Laya.stage.width/2,Laya.stage.height/2);      
         this._map.addHero(this._bubbleHero);
         this._map.eatHandler = Laya.Handler.create(this,this.onEat,null,false);
@@ -120,6 +122,7 @@ export default class GameControl extends Laya.Script {
         if(dst == this._bubbleHero){
             this.gameState = GameState.END;
         }else if(src == this._bubbleHero){
+            this._gameUI.showKillTip(src.name,dst.name);
             this.playEmotionAnim();
         }else{
             this._gameUI.showKillTip(src.name,dst.name);
@@ -144,6 +147,7 @@ export default class GameControl extends Laya.Script {
         this.leftTime = GameControl.TotalTime;
         while(this.leftTime > 0 && this.gameState == GameState.START){
             await GameUtil.wait(1000);
+            if(!this.enabled) break;
             this.leftTime -=1;
         }
         this.gameState = GameState.END;

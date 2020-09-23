@@ -72,7 +72,14 @@ export class GameMap extends Laya.Sprite{
             this._rankDataList.push(this._bubbleHero.bubbleData);
         }
         this._rankDataList.sort((l,r)=>r.eatBeans-l.eatBeans);
-        this._bubbleHero.rank = this._rankDataList.findIndex((value,index,list)=>!value.isAI)+1;
+        for(let i=0;i<this._rankDataList.length;++i){
+            let data = this._rankDataList[i];
+            if(data.isAI){
+                data.rank = i+1;
+            }else{
+                this._bubbleHero.rank = i+1;
+            }
+        }
         this.updateRankHandler && this.updateRankHandler.runWith(this._rankDataList);
     }
 
@@ -118,6 +125,9 @@ export class GameMap extends Laya.Sprite{
                 }else{
                     icon.y = b.y;
                 }
+                icon.graphics.clear();
+                icon.graphics.drawCircle(icon.width/2,icon.height/2,icon.width/2,b.bubbleData.color);
+                icon.graphics.fillText(`${b.rank}`,icon.width/2,3,'14px Arial','#000000','center');
                 this.addChild(icon);
             }else{
                 let icon = this._bubbleIconMap.get(b);
@@ -294,7 +304,6 @@ export class GameMap extends Laya.Sprite{
             ai.setMoveBoundary(this._boundary.x,this._boundary.y);
             this._bubbleAIList.push(ai);
             this.addChild(ai);
-            ai.startAILogic();
             //每个泡泡AI对应一个圆形icon,在出舞台时以icon表现位置动向
             let icon = new Laya.Sprite();
             icon.size(GameMap.IconSize,GameMap.IconSize);
@@ -341,7 +350,10 @@ export class GameMap extends Laya.Sprite{
             let y1 = this._boundary.y;
             this.graphics.drawLine(x0,y0,x1,y1,GameMap.LineColor,1);
         }
+    }
 
+    onDestroy(){
+        GameMap._instance = null;
     }
 
 }

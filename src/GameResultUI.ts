@@ -1,3 +1,5 @@
+import Bubble, { BubbleFactory } from "./Bubble";
+import ScaleButton from "./common/ScaleButton";
 import GameConfig from "./GameConfig";
 import GameUI from "./GameUI";
 import { GameUtil } from "./GameUtil";
@@ -6,7 +8,6 @@ import { ui } from "./ui/layaMaxUI";
 export default class GameResultUI extends ui.bubble.GameResultRenderUI{
     constructor(){
         super()
-        this.initUI();
     }
     initUI(){
         this.htmlTxt.style.fontSize = 45;
@@ -14,13 +15,16 @@ export default class GameResultUI extends ui.bubble.GameResultRenderUI{
         this.htmlTxt.style.align = Laya.HTMLStyle.ALIGN_CENTER;
         this.htmlTxt.style.width = this.boxHtmlTxt.width;
         this.htmlTxt.style.height = this.boxHtmlTxt.height;
-        this.btnGet.on(Laya.Event.CLICK,this,this.onClick);
+        this.btnGet.getComponent(ScaleButton).clickHandler = Laya.Handler.create(this,this.onClick);
         this.mouseEnabled=true;
     }
 
+    onAwake(){
+        this.initUI();
+    }
+
     private onClick(){
-        console.log("刷新界面重新开始游戏");
-        window.location.reload();
+        Laya.Scene.open("bubble/LaunchScene.scene");
     }
 
     public show(rank:number,score:number,attackName:string){
@@ -35,6 +39,7 @@ export default class GameResultUI extends ui.bubble.GameResultRenderUI{
     async startAutoRotate(){
         while(true){
             await GameUtil.wait(100);
+            if(!this.activeInHierarchy) break;
             this.img_star.rotation += 2;
         }
     }

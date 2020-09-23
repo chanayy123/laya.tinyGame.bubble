@@ -9,6 +9,8 @@ export class BubbleData{
     public name:string;
     public color:string;
     constructor(){
+    }
+    init(){
         this.name="";
         this.eatBeans=0;
         this.rank =0;
@@ -71,6 +73,7 @@ export default class Bubble extends Laya.Sprite{
         this._shapeSp =  this._shapeSp || new Laya.Sprite();
         this.addChild(this._shapeSp);
         this._bubbleData = this._bubbleData || new BubbleData();
+        this._bubbleData.init();
         this.initStar(skin);
         this._initBubbleSize = size;
         this._visionRange = Laya.stage.width;
@@ -166,6 +169,10 @@ export default class Bubble extends Laya.Sprite{
         this.updateShape(value,deltaSize);
     }
 
+    public get bubbleSize():number{
+        return this._bubbleSize;
+    }
+
     public get attacker():Bubble{
         return this._attacker;
     }
@@ -215,10 +222,6 @@ export default class Bubble extends Laya.Sprite{
 
     public get aimTarget():Laya.Sprite{
         return this._aimTarget;
-    }
-
-    public get bubbleSize():number{
-        return this._bubbleSize;
     }
 
     public get bubbleData():BubbleData{
@@ -398,6 +401,7 @@ export default class Bubble extends Laya.Sprite{
         let dstY = dstShape.startY;
         while(this._isTransforming){
             await GameUtil.wait(step);
+            if(!this.activeInHierarchy) break;
             startTime+= step;
             let startX = easeFunc(startTime,srcX,dstX-srcX,totalTime);
             let startY = easeFunc(startTime,srcY,dstY-srcY,totalTime);
@@ -500,6 +504,10 @@ export default class Bubble extends Laya.Sprite{
     private autoRotateStar(){
         this._starShapeSp.rotation += 0.5;
     }
+    
+    onEnable(){
+        this.startAILogic();
+    }
 
     private updateMove(){
         var radians = this.bubbleRotation*Math.PI/180;
@@ -556,6 +564,7 @@ export default class Bubble extends Laya.Sprite{
             }
             let time = baseTime + Math.floor(Math.random()*500);
             await GameUtil.wait(time);
+            if(!this.activeInHierarchy) break;
         }
     }
 
@@ -587,6 +596,7 @@ export default class Bubble extends Laya.Sprite{
     public kill(b:Bubble){
         b.attacker = this;
         b.State = BubbleState.DEAD;
+        this.aimTarget = this.aimTarget == b?null:this.aimTarget;
         this.playKillAnim();
     }
 
