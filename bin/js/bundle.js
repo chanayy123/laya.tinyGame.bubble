@@ -1822,7 +1822,7 @@
             this._map.init(GameMap.MAP_WIDTH, GameMap.MAP_HEIGHT);
             this.owner.addChildAt(this._map, 0);
             this._bubbleHero = BubbleFactory.Create(Bubble.InitSize, 0, false);
-            this._bubbleHero.bubbleName = "Molly(我)";
+            this._bubbleHero.bubbleName = "我";
             this._bubbleHero.pos(Laya.stage.width / 2, Laya.stage.height / 2);
             this._map.addHero(this._bubbleHero);
             this._map.eatHandler = Laya.Handler.create(this, this.onEat, null, false);
