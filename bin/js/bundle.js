@@ -1,6 +1,301 @@
 (function () {
     'use strict';
 
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License. You may obtain a copy of the
+    License at http://www.apache.org/licenses/LICENSE-2.0
+
+    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+    MERCHANTABLITY OR NON-INFRINGEMENT.
+
+    See the Apache Version 2.0 License for specific language governing permissions
+    and limitations under the License.
+    ***************************************************************************** */
+    /* global Reflect, Promise */
+
+    var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+
+    function __extends(d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __rest(s, e) {
+        var t = {};
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+            t[p] = s[p];
+        if (s != null && typeof Object.getOwnPropertySymbols === "function")
+            for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+                t[p[i]] = s[p[i]];
+        return t;
+    }
+
+    function __decorate(decorators, target, key, desc) {
+        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+        else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
+    }
+
+    function __param(paramIndex, decorator) {
+        return function (target, key) { decorator(target, key, paramIndex); }
+    }
+
+    function __metadata(metadataKey, metadataValue) {
+        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+    }
+
+    function __awaiter(thisArg, _arguments, P, generator) {
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
+    function __generator(thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (_) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    }
+
+    function __exportStar(m, exports) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+
+    function __values(o) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+        if (m) return m.call(o);
+        return {
+            next: function () {
+                if (o && i >= o.length) o = void 0;
+                return { value: o && o[i++], done: !o };
+            }
+        };
+    }
+
+    function __read(o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    }
+
+    function __spread() {
+        for (var ar = [], i = 0; i < arguments.length; i++)
+            ar = ar.concat(__read(arguments[i]));
+        return ar;
+    }
+
+    function __await(v) {
+        return this instanceof __await ? (this.v = v, this) : new __await(v);
+    }
+
+    function __asyncGenerator(thisArg, _arguments, generator) {
+        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+        var g = generator.apply(thisArg, _arguments || []), i, q = [];
+        return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+        function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+        function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+        function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+        function fulfill(value) { resume("next", value); }
+        function reject(value) { resume("throw", value); }
+        function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+    }
+
+    function __asyncDelegator(o) {
+        var i, p;
+        return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
+        function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: n === "return" } : f ? f(v) : v; } : f; }
+    }
+
+    function __asyncValues(o) {
+        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+        var m = o[Symbol.asyncIterator], i;
+        return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+        function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+        function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+    }
+
+    function __makeTemplateObject(cooked, raw) {
+        if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+        return cooked;
+    };
+
+    function __importStar(mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+        result.default = mod;
+        return result;
+    }
+
+    function __importDefault(mod) {
+        return (mod && mod.__esModule) ? mod : { default: mod };
+    }
+
+    class SceneManager {
+        constructor() {
+            this.preLoad();
+        }
+        static get Instance() {
+            if (this._instance == null) {
+                this._instance = new SceneManager();
+            }
+            return this._instance;
+        }
+        preLoad() {
+            Laya.Scene.load(SceneManager.DefaultLoadScene, Laya.Handler.create(this, (scene) => {
+                this._loadingScene = scene;
+            }));
+        }
+        open(url, synPromise = null, showLoadingView = false, closeOther = true, progressHandler = null, completeHandler = null) {
+            return __awaiter(this, void 0, void 0, function* () {
+                try {
+                    if (showLoadingView && !this._loadingScene) {
+                        Laya.timer.once(100, this, this.open, [url, closeOther, showLoadingView, synPromise, progressHandler, completeHandler]);
+                        return;
+                    }
+                    if (showLoadingView) {
+                        Laya.Scene.setLoadingPage(this._loadingScene);
+                        Laya.Scene.showLoadingPage(null, 0);
+                        progressHandler = progressHandler || Laya.Handler.create(this, this._doProgress, null, false);
+                    }
+                    synPromise = synPromise || this._getDefaultPromise();
+                    let loadPromise = this._doLoadScene(url, progressHandler);
+                    let res = yield Promise.all([loadPromise, synPromise]);
+                    let newScene = res[0];
+                    let data = res[1];
+                    completeHandler && completeHandler.runWith(newScene);
+                    progressHandler && progressHandler.recover();
+                    newScene.open(true, data);
+                    if (showLoadingView) {
+                        Laya.Scene.setLoadingPage(this._loadingScene);
+                        Laya.Scene.hideLoadingPage(0);
+                    }
+                }
+                catch (error) {
+                    console.warn(`加载${url}出现异常:${error}`);
+                }
+            });
+        }
+        _doProgress(value) {
+            this._loadingScene.event(Laya.Event.PROGRESS, value);
+        }
+        _doLoadScene(url, progressHandler) {
+            return new Promise((resolve, reject) => {
+                Laya.Scene.load(url, Laya.Handler.create(this, (scene) => {
+                    Laya.Scene.setLoadingPage(null);
+                    resolve(scene);
+                }), progressHandler);
+            });
+        }
+        _getDefaultPromise() {
+            return Promise.resolve();
+        }
+    }
+    SceneManager.MinLoadTime = 500;
+    SceneManager.DefaultLoadScene = "bubble/LoadingScene.scene";
+
+    class ResData {
+        static getMusicPath(name) {
+            return `sound/music_${name}.mp3`;
+        }
+        static getAudioPath(name) {
+            return `sound/audio_${name}.mp3`;
+        }
+        static getObstacleRes(index) {
+            return `gameSkin/bubble_${index}.png`;
+        }
+        static getEmotionRes(id) {
+            return `chat/anim/emoji_${id}.ani`;
+        }
+    }
+    ResData.RES_ATLAS_EMOTION = "res/atlas/chat/emoji.atlas";
+    ResData.RES_SOUND_CLICK = "click";
+    ResData.RES_SOUND_BG = "bg";
+    ResData.RES_SOUND_EAT = "eat";
+    ResData.RES_SOUND_WIN = "win";
+    ResData.RES_SOUND_FAIL = "fail";
+    ResData.RES_SOUND_RETURN = "return";
+    ResData.RES_SCENE_LAUNCH = "bubble/LaunchScene.scene";
+    ResData.RES_SCENE_SELECT = "bubble/SelectScene.scene";
+    ResData.RES_SCENE_Main = "bubble/MainScene.scene";
+
+    class SoundHelper {
+        static playMusic(name, useGesture = false) {
+            let path = ResData.getMusicPath(name);
+            if (useGesture) {
+                if (!this._useGesture) {
+                    Laya.SoundManager.playMusic(path, 0);
+                    this._useGesture = true;
+                }
+            }
+            else {
+                Laya.SoundManager.playMusic(path, 0);
+            }
+        }
+        static playAudio(name) {
+            let path = ResData.getAudioPath(name);
+            Laya.SoundManager.playSound(path, 1);
+        }
+    }
+    SoundHelper._useGesture = false;
+
     class ScaleButton extends Laya.Script {
         constructor() {
             super();
@@ -8,55 +303,24 @@
             this.tweenTime = 200;
         }
         onAwake() {
-            this._btn = this.owner;
-            this._btn.anchorX = this._btn.anchorY = 0.5;
+            this._btnOwner = this.owner;
+            this._btnOwner.anchorX = this._btnOwner.anchorY = 0.5;
         }
         onMouseDown() {
-            Laya.Tween.clearAll(this._btn);
-            Laya.Tween.to(this._btn, { scaleX: this.scaleRatio, scaleY: this.scaleRatio }, this.tweenTime);
+            Laya.Tween.clearAll(this._btnOwner);
+            Laya.Tween.to(this._btnOwner, { scaleX: this.scaleRatio, scaleY: this.scaleRatio }, this.tweenTime);
         }
         onMouseUp() {
-            Laya.Tween.clearAll(this._btn);
-            Laya.Tween.to(this._btn, { scaleX: 1, scaleY: 1 }, this.tweenTime);
+            Laya.Tween.clearAll(this._btnOwner);
+            Laya.Tween.to(this._btnOwner, { scaleX: 1, scaleY: 1 }, this.tweenTime);
         }
         onMouseOut() {
-            Laya.Tween.clearAll(this._btn);
-            Laya.Tween.to(this._btn, { scaleX: 1, scaleY: 1 }, this.tweenTime);
+            Laya.Tween.clearAll(this._btnOwner);
+            Laya.Tween.to(this._btnOwner, { scaleX: 1, scaleY: 1 }, this.tweenTime);
         }
         onClick() {
             this.clickHandler && this.clickHandler.run();
-        }
-    }
-
-    class Launch extends Laya.Script {
-        constructor() {
-            super();
-        }
-        onAwake() {
-            this.owner.autoDestroyAtClosed = true;
-            this.btnStart.getComponent(ScaleButton).clickHandler = Laya.Handler.create(this, this.onBtnClick);
-        }
-        onEnable() {
-        }
-        onBtnClick(e) {
-            Laya.Scene.open("bubble/MainScene.scene");
-        }
-        onDisable() {
-        }
-    }
-
-    class Resize extends Laya.Script {
-        constructor() { super(); }
-        onEnable() {
-            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
-            this.onResize();
-        }
-        onDisable() {
-            Laya.stage.off(Laya.Event.RESIZE, this, this.onResize);
-        }
-        onResize() {
-            this.owner.size(Laya.stage.width, Laya.stage.height);
-            console.log("适配最新舞台尺寸: " + Laya.stage.width + " " + Laya.stage.height);
+            SoundHelper.playAudio(ResData.RES_SOUND_CLICK);
         }
     }
 
@@ -251,12 +515,83 @@
         static clamp(value, min, max) {
             return value < min ? min : value > max ? max : value;
         }
+        static randomRange(minValue, maxValue) {
+            return minValue + Math.random() * (maxValue - minValue);
+        }
+        static hasProbability(value) {
+            return 100 * Math.random() < value;
+        }
+        static unTarget(src, dst, offset = 30) {
+            let rotation = Math.atan2(src.y - dst.y, src.x - dst.x);
+            let minus = Math.random() >= 0.5;
+            offset = minus ? -offset * Math.random() : offset * Math.random();
+            let angle = Laya.Utils.toAngle(rotation) + offset;
+            return angle;
+        }
         static fmtTime(seconds) {
             let min = Math.floor(seconds / 60);
             let sec = seconds % 60;
             let minStr = min < 10 ? `0${min}` : min;
             let secStr = sec < 10 ? `0${sec}` : sec;
             return `${minStr}:${secStr}`;
+        }
+    }
+
+    class LaunchControl extends Laya.Script {
+        constructor() {
+            super();
+        }
+        onAwake() {
+            this.owner.autoDestroyAtClosed = true;
+            this._progress = this.owner.getChildByName("progress");
+        }
+        onEnable() {
+            this._progress.value = 0;
+            SceneManager.Instance.open(ResData.RES_SCENE_SELECT, GameUtil.wait(LaunchControl.MinLoadTime), false, true, Laya.Handler.create(this, this.onProgress, null, false));
+        }
+        onProgress(value) {
+            this._progress.value = value;
+        }
+        onClick(e) {
+            SoundHelper.playMusic(ResData.RES_SOUND_BG, true);
+        }
+        onDisable() {
+        }
+    }
+    LaunchControl.MinLoadTime = 1000;
+
+    class Resize extends Laya.Script {
+        constructor() { super(); }
+        onEnable() {
+            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
+            this.onResize();
+        }
+        onDisable() {
+            Laya.stage.off(Laya.Event.RESIZE, this, this.onResize);
+        }
+        onResize() {
+            this.owner.size(Laya.stage.width, Laya.stage.height);
+        }
+    }
+
+    class LoadingUI extends Laya.Script {
+        constructor() {
+            super();
+        }
+        onAwake() {
+            this._progress = this.owner.getChildByName("progress");
+        }
+        onEnable() {
+            this._progress.value = 0;
+            this.owner.on(Laya.Event.PROGRESS, this, this.onProgress);
+        }
+        onProgress(value) {
+            let time = new Date().getTime();
+            console.log(time + " 加载进度:" + value);
+            this._progress.value = value;
+        }
+        onDisable() {
+            this.owner.off(Laya.Event.PROGRESS, this, this.onProgress);
         }
     }
 
@@ -274,7 +609,7 @@
                     this.createView(GameRenderUI.uiView);
                 }
             }
-            GameRenderUI.uiView = { "type": "View", "props": { "width": 720, "height": 67 }, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "game/img_bg1.png", "centerY": 0, "centerX": -194, "sizeGrid": "20,25,20,25" }, "compId": 3, "child": [{ "type": "Label", "props": { "var": "labelTotalScore", "text": "得分:0", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 5 }] }, { "type": "Image", "props": { "skin": "game/img_bg1.png", "centerY": 0, "centerX": 35, "sizeGrid": "20,25,20,25" }, "compId": 4, "child": [{ "type": "Label", "props": { "y": 10, "x": -125, "var": "labelTime", "text": "02:59", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 6 }] }, { "type": "Box", "props": { "y": 80, "width": 196, "right": 10, "height": 280 }, "compId": 15, "child": [{ "type": "Image", "props": { "var": "img_bgRankList", "skin": "game/img_bg2.png", "right": 0, "left": 0, "height": 280, "sizeGrid": "10,10,10,10" }, "compId": 7 }, { "type": "List", "props": { "y": 10, "var": "rankList", "spaceY": 5, "right": 0, "repeatY": 1, "repeatX": 1, "left": 0 }, "compId": 8 }] }, { "type": "Image", "props": { "var": "imgKill", "top": 20, "skin": "game/img_bgKill.png", "centerX": 0 }, "compId": 16, "child": [{ "type": "Label", "props": { "y": 109, "x": 217, "width": 103, "var": "labelSrc", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff" }, "compId": 17 }, { "type": "Label", "props": { "y": 167, "x": 287, "width": 163, "var": "labelDst", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff", "align": "right" }, "compId": 18 }, { "type": "Image", "props": { "y": 111, "x": 273.013671875, "skin": "game/img_txtEat.png" }, "compId": 19 }] }], "loadList": ["game/img_bg1.png", "game/img_bg2.png", "game/img_bgKill.png", "game/img_txtEat.png"], "loadList3D": [] };
+            GameRenderUI.uiView = { "type": "View", "props": { "width": 720, "height": 67 }, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "gameSkin/img_bg1.png", "centerY": 0, "centerX": -194, "sizeGrid": "20,25,20,25" }, "compId": 3, "child": [{ "type": "Label", "props": { "var": "labelTotalScore", "text": "得分:0", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 5 }] }, { "type": "Image", "props": { "skin": "gameSkin/img_bg1.png", "centerY": 0, "centerX": 35, "sizeGrid": "20,25,20,25" }, "compId": 4, "child": [{ "type": "Label", "props": { "y": 10, "x": -125, "var": "labelTime", "text": "02:59", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 6 }] }, { "type": "Box", "props": { "y": 80, "width": 196, "right": 10, "height": 280 }, "compId": 15, "child": [{ "type": "Image", "props": { "var": "img_bgRankList", "skin": "gameSkin/img_bg2.png", "right": 0, "left": 0, "height": 280, "sizeGrid": "10,10,10,10" }, "compId": 7 }, { "type": "List", "props": { "y": 10, "var": "rankList", "spaceY": 5, "right": 0, "repeatY": 1, "repeatX": 1, "left": 0 }, "compId": 8 }] }, { "type": "Image", "props": { "var": "imgKill", "top": 20, "skin": "gameSkin/img_bgKill.png", "centerX": 0 }, "compId": 16, "child": [{ "type": "Label", "props": { "y": 109, "x": 217, "width": 103, "var": "labelSrc", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff" }, "compId": 17 }, { "type": "Label", "props": { "y": 167, "x": 287, "width": 163, "var": "labelDst", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff", "align": "right" }, "compId": 18 }, { "type": "Image", "props": { "y": 111, "x": 273.013671875, "skin": "gameSkin/img_txtEat.png" }, "compId": 19 }] }], "loadList": ["gameSkin/img_bg1.png", "gameSkin/img_bg2.png", "gameSkin/img_bgKill.png", "gameSkin/img_txtEat.png"], "loadList3D": [] };
             bubble.GameRenderUI = GameRenderUI;
             REG("ui.bubble.GameRenderUI", GameRenderUI);
             class GameResultRenderUI extends Laya.View {
@@ -286,7 +621,7 @@
                     this.createView(GameResultRenderUI.uiView);
                 }
             }
-            GameResultRenderUI.uiView = { "type": "View", "props": { "width": 720, "mouseEnabled": true, "height": 1280 }, "compId": 2, "child": [{ "type": "Image", "props": { "top": 0, "skin": "game/img_blank.png", "right": 0, "left": 0, "bottom": 0, "sizeGrid": "4,4,4,4" }, "compId": 16 }, { "type": "Box", "props": { "width": 500, "height": 450, "centerY": -320, "centerX": 0 }, "compId": 31, "child": [{ "type": "Image", "props": { "y": 213.5, "x": 251, "var": "img_star", "skin": "game/img_star.png", "rotation": 0, "centerX": 0, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 17 }, { "type": "Image", "props": { "y": 160.5, "x": -109, "skin": "game/img_bgTitle.png", "centerX": 0 }, "compId": 18 }, { "type": "Label", "props": { "y": 180.5, "x": -109, "var": "labelRank", "text": "排名", "fontSize": 45, "color": "#ffffff", "centerX": 0 }, "compId": 28 }] }, { "type": "Box", "props": { "width": 600, "var": "boxHtmlTxt", "height": 100, "centerY": -122, "centerX": 0 }, "compId": 20, "child": [{ "type": "HTMLDivElement", "props": { "x": 0, "width": 218, "var": "htmlTxt", "text": "被XXX吃掉了", "height": 60, "fontSize": 32, "centerY": -159, "runtime": "laya.html.dom.HTMLDivElement" }, "compId": 19 }] }, { "type": "Label", "props": { "var": "labelScore", "text": "积分: 123", "fontSize": 45, "color": "#ffffff", "centerY": 24, "centerX": 0 }, "compId": 21 }, { "type": "Image", "props": { "skin": "game/img_energy.png", "centerY": 200, "centerX": -154 }, "compId": 23, "child": [{ "type": "Label", "props": { "y": -5, "x": 33, "var": "labelEnergy", "text": "123", "fontSize": 45, "color": "#ffffff" }, "compId": 22 }] }, { "type": "Image", "props": { "x": 455, "var": "btnGet", "skin": "game/img_btnGet.png", "centerY": 200, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 24, "child": [{ "type": "Script", "props": { "runtime": "common/ScaleButton.ts" }, "compId": 30 }] }], "loadList": ["game/img_blank.png", "game/img_star.png", "game/img_bgTitle.png", "game/img_energy.png", "game/img_btnGet.png"], "loadList3D": [] };
+            GameResultRenderUI.uiView = { "type": "View", "props": { "width": 720, "mouseEnabled": true, "height": 1280 }, "compId": 2, "child": [{ "type": "Image", "props": { "top": 0, "skin": "gameSkin/img_blank.png", "right": 0, "left": 0, "bottom": 0, "sizeGrid": "4,4,4,4" }, "compId": 16 }, { "type": "Box", "props": { "width": 500, "height": 450, "centerY": -320, "centerX": 0 }, "compId": 31, "child": [{ "type": "Image", "props": { "y": 213.5, "x": 251, "var": "img_star", "skin": "gameSkin/img_star.png", "rotation": 0, "centerX": 0, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 17 }, { "type": "Image", "props": { "y": 160.5, "x": -109, "skin": "gameSkin/img_bgTitle.png", "centerX": 0 }, "compId": 18 }, { "type": "Label", "props": { "y": 180.5, "x": -109, "var": "labelRank", "text": "排名", "fontSize": 45, "color": "#ffffff", "centerX": 0 }, "compId": 28 }] }, { "type": "Box", "props": { "width": 600, "var": "boxHtmlTxt", "height": 100, "centerY": -122, "centerX": 0 }, "compId": 20, "child": [{ "type": "HTMLDivElement", "props": { "x": 0, "width": 218, "var": "htmlTxt", "text": "被XXX吃掉了", "height": 60, "fontSize": 32, "centerY": -159, "runtime": "laya.html.dom.HTMLDivElement" }, "compId": 19 }] }, { "type": "Label", "props": { "var": "labelScore", "text": "积分: 123", "fontSize": 45, "color": "#ffffff", "centerY": 24, "centerX": 0 }, "compId": 21 }, { "type": "Image", "props": { "skin": "gameSkin/img_energy.png", "centerY": 200, "centerX": -154 }, "compId": 23, "child": [{ "type": "Label", "props": { "y": -5, "x": 33, "var": "labelEnergy", "text": "123", "fontSize": 45, "color": "#ffffff" }, "compId": 22 }] }, { "type": "Image", "props": { "x": 455, "var": "btnGet", "skin": "gameSkin/img_btnGet.png", "centerY": 200, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 24, "child": [{ "type": "Script", "props": { "runtime": "common/ScaleButton.ts" }, "compId": 30 }] }], "loadList": ["gameSkin/img_blank.png", "gameSkin/img_star.png", "gameSkin/img_bgTitle.png", "gameSkin/img_energy.png", "gameSkin/img_btnGet.png"], "loadList3D": [] };
             bubble.GameResultRenderUI = GameResultRenderUI;
             REG("ui.bubble.GameResultRenderUI", GameResultRenderUI);
             class RankItemRenderUI extends Laya.View {
@@ -350,193 +685,6 @@
         }
     }
 
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
-
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
-
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
-    ***************************************************************************** */
-    /* global Reflect, Promise */
-
-    var extendStatics = function(d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-
-    function __extends(d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    }
-
-    var __assign = function() {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-
-    function __rest(s, e) {
-        var t = {};
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-            t[p] = s[p];
-        if (s != null && typeof Object.getOwnPropertySymbols === "function")
-            for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-                t[p[i]] = s[p[i]];
-        return t;
-    }
-
-    function __decorate(decorators, target, key, desc) {
-        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-        else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    }
-
-    function __param(paramIndex, decorator) {
-        return function (target, key) { decorator(target, key, paramIndex); }
-    }
-
-    function __metadata(metadataKey, metadataValue) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
-    }
-
-    function __awaiter(thisArg, _arguments, P, generator) {
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
-
-    function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    }
-
-    function __exportStar(m, exports) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-
-    function __values(o) {
-        var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-        if (m) return m.call(o);
-        return {
-            next: function () {
-                if (o && i >= o.length) o = void 0;
-                return { value: o && o[i++], done: !o };
-            }
-        };
-    }
-
-    function __read(o, n) {
-        var m = typeof Symbol === "function" && o[Symbol.iterator];
-        if (!m) return o;
-        var i = m.call(o), r, ar = [], e;
-        try {
-            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-        }
-        catch (error) { e = { error: error }; }
-        finally {
-            try {
-                if (r && !r.done && (m = i["return"])) m.call(i);
-            }
-            finally { if (e) throw e.error; }
-        }
-        return ar;
-    }
-
-    function __spread() {
-        for (var ar = [], i = 0; i < arguments.length; i++)
-            ar = ar.concat(__read(arguments[i]));
-        return ar;
-    }
-
-    function __await(v) {
-        return this instanceof __await ? (this.v = v, this) : new __await(v);
-    }
-
-    function __asyncGenerator(thisArg, _arguments, generator) {
-        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-        var g = generator.apply(thisArg, _arguments || []), i, q = [];
-        return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
-        function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
-        function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
-        function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
-        function fulfill(value) { resume("next", value); }
-        function reject(value) { resume("throw", value); }
-        function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
-    }
-
-    function __asyncDelegator(o) {
-        var i, p;
-        return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
-        function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: n === "return" } : f ? f(v) : v; } : f; }
-    }
-
-    function __asyncValues(o) {
-        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-        var m = o[Symbol.asyncIterator], i;
-        return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-        function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-        function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-    }
-
-    function __makeTemplateObject(cooked, raw) {
-        if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
-        return cooked;
-    };
-
-    function __importStar(mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-        result.default = mod;
-        return result;
-    }
-
-    function __importDefault(mod) {
-        return (mod && mod.__esModule) ? mod : { default: mod };
-    }
-
     class GameResultUI extends ui.bubble.GameResultRenderUI {
         constructor() {
             super();
@@ -547,21 +695,24 @@
             this.htmlTxt.style.align = Laya.HTMLStyle.ALIGN_CENTER;
             this.htmlTxt.style.width = this.boxHtmlTxt.width;
             this.htmlTxt.style.height = this.boxHtmlTxt.height;
-            this.btnGet.getComponent(ScaleButton).clickHandler = Laya.Handler.create(this, this.onClick);
+            this.on(Laya.Event.CLICK, this, this.onBtnClick);
             this.mouseEnabled = true;
         }
         onAwake() {
             this.initUI();
         }
-        onClick() {
-            Laya.Scene.open("bubble/LaunchScene.scene");
+        onBtnClick(e) {
+            if (e.target == this.btnGet) {
+                SceneManager.Instance.open(ResData.RES_SCENE_SELECT);
+                SoundHelper.playAudio(ResData.RES_SOUND_RETURN);
+            }
         }
-        show(rank, score, attackName) {
+        show(rank, score, energy, attackName) {
             this.visible = true;
             this.labelRank.text = `第${rank}名`;
             this.labelScore.text = `积分: ${score}`;
             this.htmlTxt.innerHTML = attackName ? `<span color='#ffffff'>被</span><span color='#e0c4c4'>${attackName}</span><span color='#ffffff'>吃掉了</span>` : "";
-            this.labelEnergy.text = `${score * 10}`;
+            this.labelEnergy.text = `${energy}`;
             this.startAutoRotate();
         }
         startAutoRotate() {
@@ -579,16 +730,33 @@
         }
     }
 
-    class ResData {
-        static getObstacleRes(index) {
-            return `game/bubble_${index}.png`;
+    class UserData {
+        constructor() {
+            let energy = Laya.LocalStorage.getItem(UserData.KEY_ENERGY) || "0";
+            this.energy = parseInt(energy);
+            let firstPlay = Laya.LocalStorage.getItem(UserData.KEY_FIRSTPLAY) || "0";
+            this._isFirstPlay = parseInt(firstPlay) == 1;
+            Laya.LocalStorage.setItem(UserData.KEY_FIRSTPLAY, "1");
         }
-        static getEmotionRes(id) {
-            return `chat/anim/emoji_${id}.ani`;
+        static get Instance() {
+            if (this._instance == null) {
+                this._instance = new UserData();
+            }
+            return this._instance;
+        }
+        set energy(value) {
+            this._energy = value;
+            Laya.LocalStorage.setItem(UserData.KEY_ENERGY, value.toString());
+        }
+        get energy() {
+            return this._energy;
+        }
+        get isFirstPlay() {
+            return this._isFirstPlay;
         }
     }
-    ResData.RES_ATLAS_GAME = "res/atlas/game.atlas";
-    ResData.RES_ATLAS_EMOTION = "res/atlas/chat/emoji.atlas";
+    UserData.KEY_ENERGY = "energy";
+    UserData.KEY_FIRSTPLAY = "firstPlay";
 
     class Obstacle extends Laya.Sprite {
         constructor() {
@@ -657,6 +825,7 @@
             this.initStar(skin);
             this._initBubbleSize = size;
             this._visionRange = Laya.stage.width;
+            this._alarmRange = GameUtil.randomRange(Bubble.MinAlaramRange, Bubble.MaxAlarmRange);
             this.skinIndex = skin;
             this.isAI = isAI;
             this.level = 0;
@@ -767,6 +936,9 @@
         get visionRange() {
             return this._visionRange;
         }
+        get alarmRange() {
+            return this._alarmRange;
+        }
         get skinIndex() {
             return this._skinIndex;
         }
@@ -783,8 +955,17 @@
                 }
             }
         }
+        set unAimTarget(value) {
+            this._aimTarget = null;
+            this.bubbleRotation = GameUtil.unTarget(this, value);
+            if (this.State == BubbleState.NORMAL) {
+                this.State = BubbleState.MOVE;
+            }
+        }
         get aimTarget() {
-            return this._aimTarget;
+            if (this._aimTarget && this._aimTarget.displayedInStage)
+                return this._aimTarget;
+            return null;
         }
         get bubbleData() {
             return this._bubbleData;
@@ -834,6 +1015,13 @@
         addVisionObs(target) {
             this._visionObsList = this._visionObsList || [];
             this._visionObsList.push(target);
+        }
+        clearAlarms() {
+            this._alarmBubbleList && (this._alarmBubbleList.length = 0);
+        }
+        addAlarmBubble(target) {
+            this._alarmBubbleList = this._alarmBubbleList || [];
+            this._alarmBubbleList.push(target);
         }
         isInVision(target) {
             if (this._visionBubbleList && this._visionBubbleList.indexOf(target) != -1) {
@@ -1043,6 +1231,7 @@
             this.startAILogic();
         }
         updateMove() {
+            this.updateTargetLook();
             var radians = this.bubbleRotation * Math.PI / 180;
             var xOffset = Math.cos(radians) * this._moveSpeed;
             var yOffset = Math.sin(radians) * this._moveSpeed;
@@ -1051,6 +1240,11 @@
             this.x = GameUtil.clamp(this.x + xOffset, this.bubbleSize / 2, this.moveBoundary.x - this.bubbleSize / 2);
             this.y = GameUtil.clamp(this.y + yOffset, this.bubbleSize / 2, this.moveBoundary.y - this.bubbleSize / 2);
             this.setMoveDelta(this.x - preX, this.y - preY);
+        }
+        updateTargetLook() {
+            if (this.aimTarget) {
+                this.bubbleRotation = Math.atan2(this.aimTarget.y - this.y, this.aimTarget.x - this.x) * 180 / Math.PI;
+            }
         }
         get isOnBoundary() {
             if (this.x <= this.width / 2 || this.x >= this.moveBoundary.x - this.width / 2)
@@ -1068,34 +1262,71 @@
                     if (this.isOnBoundary) {
                         this.bubbleRotation = Math.floor(Math.random() * 360);
                         this.State = BubbleState.MOVE;
-                        baseTime = 500;
+                        baseTime = 200;
                     }
                     else {
-                        if (this._visionObsList && this._visionObsList.length > 0) {
-                            if (this.aimTarget == null) {
-                                let idx = Math.floor(Math.random() * this._visionObsList.length);
-                                this.aimTarget = this._visionObsList[idx];
-                            }
-                            else if (!this.isInVision(this.aimTarget)) {
-                                let idx = Math.floor(Math.random() * this._visionObsList.length);
-                                this.aimTarget = this._visionObsList[idx];
-                            }
-                            baseTime = 500;
-                        }
-                        else {
-                            this.aimTarget = null;
-                            let rand = Math.random() * 100;
-                            if (rand <= 50) {
-                                this.bubbleRotation = Math.floor(Math.random() * 360);
-                                this.State = BubbleState.MOVE;
-                            }
-                            else if (rand <= 60) {
-                                this.State = BubbleState.NORMAL;
+                        let sTarget = this.hasStrongEnemy();
+                        let wTarget = this.hasWeakEnemy();
+                        let actionFlag = true;
+                        if (sTarget) {
+                            if (wTarget) {
+                                if (GameUtil.hasProbability(60)) {
+                                    this.unAimTarget = sTarget;
+                                    baseTime = 1000;
+                                }
+                                else {
+                                    this.aimTarget = wTarget;
+                                    baseTime = 1500;
+                                }
                             }
                             else {
-                                this.State = BubbleState.MOVE;
+                                if (GameUtil.hasProbability(80)) {
+                                    this.unAimTarget = sTarget;
+                                    baseTime = 1000;
+                                }
+                                else {
+                                    actionFlag = false;
+                                }
                             }
-                            baseTime = 1000;
+                        }
+                        else {
+                            if (wTarget) {
+                                if (GameUtil.hasProbability(70)) {
+                                    this.aimTarget = wTarget;
+                                    baseTime = 1500;
+                                }
+                                else {
+                                    actionFlag = false;
+                                }
+                            }
+                            else {
+                                actionFlag = false;
+                            }
+                        }
+                        if (!actionFlag) {
+                            if (this._visionObsList && this._visionObsList.length > 0) {
+                                if (this.aimTarget == null) {
+                                    let idx = Math.floor(Math.random() * this._visionObsList.length);
+                                    this.aimTarget = this._visionObsList[idx];
+                                    baseTime = 500;
+                                }
+                            }
+                            else {
+                                let rand = Math.random() * 100;
+                                if (rand <= 50) {
+                                    this.bubbleRotation = Math.floor(Math.random() * 360);
+                                    this.State = BubbleState.MOVE;
+                                    baseTime = 1000;
+                                }
+                                else if (rand <= 60) {
+                                    this.State = BubbleState.NORMAL;
+                                    baseTime = 200;
+                                }
+                                else {
+                                    this.State = BubbleState.MOVE;
+                                    baseTime = 1000;
+                                }
+                            }
                         }
                     }
                     let time = baseTime + Math.floor(Math.random() * 500);
@@ -1104,6 +1335,28 @@
                         break;
                 }
             });
+        }
+        hasStrongEnemy(levelGap = 1) {
+            let enemyList = this._alarmBubbleList;
+            if (!enemyList || enemyList.length == 0)
+                return null;
+            for (let i = 0; i < enemyList.length; ++i) {
+                if (enemyList[i].level - this.level >= levelGap) {
+                    return enemyList[i];
+                }
+            }
+            return null;
+        }
+        hasWeakEnemy(levelGap = 1) {
+            let enemyList = this._alarmBubbleList;
+            if (!enemyList || enemyList.length == 0)
+                return null;
+            for (let i = 0; i < enemyList.length; ++i) {
+                if (enemyList[i].level - this.level <= -levelGap) {
+                    return enemyList[i];
+                }
+            }
+            return null;
         }
         playEatAnim() {
             Laya.Tween.clearAll(this._shapeSp);
@@ -1122,13 +1375,11 @@
         eat(obs) {
             this.eatBeans += obs.beansNum;
             this.playEatAnim();
-            this.aimTarget = this.aimTarget == obs ? null : this.aimTarget;
             ObstacleFactory.Recycle(obs);
         }
         kill(b) {
             b.attacker = this;
             b.State = BubbleState.DEAD;
-            this.aimTarget = this.aimTarget == b ? null : this.aimTarget;
             this.playKillAnim();
         }
     }
@@ -1141,6 +1392,8 @@
     Bubble.AddSizeByLevel = 1;
     Bubble.InitSize = 50;
     Bubble.InitSpeed = 6;
+    Bubble.MinAlaramRange = 50;
+    Bubble.MaxAlarmRange = 100;
     class BubbleFactory {
         static Create(size, skin, isAI) {
             let b = Laya.Pool.getItemByClass(this.SIGN_BUBBLE, Bubble);
@@ -1174,8 +1427,9 @@
     var AIType;
     (function (AIType) {
         AIType[AIType["Ordinary"] = 0] = "Ordinary";
-        AIType[AIType["Risk"] = 1] = "Risk";
-        AIType[AIType["Coward"] = 2] = "Coward";
+        AIType[AIType["Aggressive"] = 1] = "Aggressive";
+        AIType[AIType["Defensive"] = 2] = "Defensive";
+        AIType[AIType["Max"] = 3] = "Max";
     })(AIType || (AIType = {}));
 
     class GameMap extends Laya.Sprite {
@@ -1193,7 +1447,7 @@
             this._boundary = new Laya.Point();
             this._boundary.x = Math.ceil(this.width / GameMap.GridSize) * GameMap.GridSize;
             this._boundary.y = Math.ceil(this.height / GameMap.GridSize) * GameMap.GridSize;
-            this.draw();
+            this.drawBg();
             this.initPlayers();
             this.initObstacles();
         }
@@ -1326,6 +1580,7 @@
             for (let i = 0; i < bCount; ++i) {
                 let b = this._bubbleAIList[i];
                 b.clearVisions();
+                b.clearAlarms();
             }
             this._delBubbleList.length = 0;
             for (let i = 0; i < bCount; ++i) {
@@ -1344,6 +1599,9 @@
                         console.log('游戏结束');
                         break;
                     }
+                }
+                else if (GameUtil.powerDistance(this._bubbleHero.x, this._bubbleHero.y, b.x, b.y) <= Math.pow(b.bubbleSize / 2 + b.alarmRange + this._bubbleHero.bubbleSize / 2, 2)) {
+                    b.addAlarmBubble(this._bubbleHero);
                 }
             }
             for (let i = 0; i < bCount; ++i) {
@@ -1364,9 +1622,15 @@
                             this._delBubbleList.push(b);
                         }
                     }
-                    else if (GameUtil.powerDistance(b.x, b.y, b2.x, b2.y) <= Math.pow(b.visionRange / 2 + b2.width / 2, 2)) {
+                    else if (GameUtil.powerDistance(b.x, b.y, b2.x, b2.y) <= Math.pow(b.visionRange / 2 + b2.bubbleSize / 2, 2)) {
                         b.addVisionBubble(b2);
                         b2.addVisionBubble(b);
+                        if (GameUtil.powerDistance(b.x, b.y, b2.x, b2.y) <= Math.pow(b.bubbleSize / 2 + b.alarmRange + b2.bubbleSize / 2, 2)) {
+                            b.addAlarmBubble(b2);
+                        }
+                        else if (GameUtil.powerDistance(b2.x, b2.y, b.x, b.y) <= Math.pow(b2.bubbleSize / 2 + b2.alarmRange + b.bubbleSize / 2, 2)) {
+                            b2.addAlarmBubble(b);
+                        }
                     }
                 }
             }
@@ -1385,6 +1649,8 @@
                     this._delObstacleList.push(obs);
                 }
                 for (let j = 0; j < bCount; ++j) {
+                    if (!obs.displayedInStage)
+                        break;
                     let b = this._bubbleAIList[j];
                     if (GameUtil.powerDistance(b.x, b.y, obs.x, obs.y) <= Math.pow(b.bubbleSize / 2 + obs.obsSize / 2 + 5, 2)) {
                         this.handleEatBeans(b, obs);
@@ -1457,7 +1723,7 @@
             }
             this.addChild(this._obsLayer);
         }
-        draw() {
+        drawBg() {
             this.graphics.clear();
             let row = Math.ceil(this.height / GameMap.GridSize);
             let col = Math.ceil(this.width / GameMap.GridSize);
@@ -1498,7 +1764,6 @@
             this.initUI();
             this.initEffect();
             this.owner.autoDestroyAtClosed = true;
-            EventSource;
         }
         onEnable() {
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
@@ -1594,6 +1859,7 @@
         onEat(src, dst) {
             if (src == this._bubbleHero) {
                 this._gameUI.showTotalScore(this._bubbleHero.eatBeans);
+                SoundHelper.playAudio(ResData.RES_SOUND_EAT);
             }
         }
         startMatch() {
@@ -1612,8 +1878,10 @@
             });
         }
         showGameResult() {
+            UserData.Instance.energy += this._bubbleHero.eatBeans * 10;
             let attacker = this._bubbleHero.attacker ? this._bubbleHero.attacker.bubbleName : null;
-            this._gameResultUI.show(this._bubbleHero.rank, this._bubbleHero.eatBeans, attacker);
+            this._gameResultUI.show(this._bubbleHero.rank, this._bubbleHero.eatBeans, this._bubbleHero.eatBeans * 10, attacker);
+            SoundHelper.playAudio(attacker ? ResData.RES_SOUND_FAIL : ResData.RES_SOUND_WIN);
         }
         set leftTime(value) {
             this._leftTime = Math.max(value, 0);
@@ -1673,17 +1941,61 @@
         GameState[GameState["END"] = 2] = "END";
     })(GameState || (GameState = {}));
 
+    class SelectControl extends Laya.Script {
+        constructor() {
+            super();
+        }
+        onAwake() {
+            this._ownerScene = this.owner;
+            this._ownerScene.autoDestroyAtClosed = true;
+            this.drawBg();
+        }
+        onEnable() {
+            this.labelEnergy.text = UserData.Instance.energy.toString();
+        }
+        onDisable() {
+        }
+        onClick(e) {
+            SoundHelper.playMusic(ResData.RES_SOUND_BG, true);
+            if (e.target == this.btnStart) {
+                SceneManager.Instance.open(ResData.RES_SCENE_Main);
+            }
+        }
+        drawBg() {
+            this._ownerScene.graphics.clear();
+            let row = Math.ceil(Laya.stage.height / SelectControl.GridSize);
+            let col = Math.ceil(Laya.stage.width / SelectControl.GridSize);
+            for (let i = 0; i <= row; ++i) {
+                let x0 = 0;
+                let y0 = (i) * SelectControl.GridSize;
+                let x1 = Laya.stage.width;
+                let y1 = y0;
+                this._ownerScene.graphics.drawLine(x0, y0, x1, y1, '#000000', 1);
+            }
+            for (let i = 0; i <= col; ++i) {
+                let x0 = (i) * SelectControl.GridSize;
+                let y0 = 0;
+                let x1 = x0;
+                let y1 = Laya.stage.height;
+                this._ownerScene.graphics.drawLine(x0, y0, x1, y1, '#000000', 1);
+            }
+        }
+    }
+    SelectControl.GridSize = 50;
+
     class GameConfig {
         constructor() {
         }
         static init() {
             var reg = Laya.ClassUtils.regClass;
             reg("common/ScaleButton.ts", ScaleButton);
-            reg("Launch.ts", Launch);
+            reg("control/LaunchControl.ts", LaunchControl);
             reg("common/Resize.ts", Resize);
-            reg("GameUI.ts", GameUI);
-            reg("GameResultUI.ts", GameResultUI);
-            reg("GameControl.ts", GameControl);
+            reg("view/LoadingUI.ts", LoadingUI);
+            reg("view/GameUI.ts", GameUI);
+            reg("view/GameResultUI.ts", GameResultUI);
+            reg("control/GameControl.ts", GameControl);
+            reg("control/SelectControl.ts", SelectControl);
         }
     }
     GameConfig.width = 720;
@@ -1722,13 +2034,14 @@
             if (GameConfig.stat)
                 Laya.Stat.show();
             Laya.alertGlobalError(true);
+            Laya.SoundManager.autoStopMusic = true;
             Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
         }
         onVersionLoaded() {
             Laya.AtlasInfoManager.enable("fileconfig.json", Laya.Handler.create(this, this.onConfigLoaded));
         }
         onConfigLoaded() {
-            GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
+            SceneManager.Instance.open(GameConfig.startScene);
         }
     }
     new Main();

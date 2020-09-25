@@ -1,0 +1,12 @@
+{
+    "Ordinary":{
+        "DefenseRange":1,
+        "AttackRange":1
+    },
+    "Aggressive":{
+
+    },
+    "Defensive":{
+
+    }
+}

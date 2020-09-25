@@ -3,4 +3,5 @@
    <item name="bubble/RankItemRender.scene" props="" ifExport="内嵌模式" aName=""/>
    <item name="bubble/GameResultRender.scene" props="" ifExport="内嵌模式" aName=""/>
    <item name="common/ScaleBig.efc" props="" ifExport="内嵌模式" aName=""/>
+   <item name="bubble/LoadingScene.scene" props="" ifExport="默认" aName=""/>
 </page>

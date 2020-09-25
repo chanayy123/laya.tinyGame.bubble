@@ -1,5 +1,6 @@
+import SceneManager from "./common/SceneManager";
 import GameConfig from "./GameConfig";
-import GameControl from "./GameControl";
+import { ui } from "./ui/layaMaxUI";
 class Main {
 	constructor() {
 		//Config.isAntialias=true;
@@ -21,6 +22,7 @@ class Main {
 		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
 		if (GameConfig.stat) Laya.Stat.show();
 		Laya.alertGlobalError(true);
+		Laya.SoundManager.autoStopMusic=true;
 		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
 		Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 	}
@@ -32,7 +34,8 @@ class Main {
 
 	onConfigLoaded(): void {
 		//加载IDE指定的场景
-		GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
+		// GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
+		SceneManager.Instance.open(GameConfig.startScene);
 	}
 }
 //激活启动类

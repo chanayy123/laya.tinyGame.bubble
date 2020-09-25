@@ -14,7 +14,7 @@ export default class Resize extends Laya.Script {
 
     onResize(){
         (this.owner as Laya.Sprite).size(Laya.stage.width,Laya.stage.height);
-        console.log("适配最新舞台尺寸: "+Laya.stage.width+" "+Laya.stage.height);
+        // console.log("适配最新舞台尺寸: "+Laya.stage.width+" "+Laya.stage.height);
     }
 
 }

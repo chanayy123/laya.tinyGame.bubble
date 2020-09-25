@@ -41,7 +41,9 @@ P 0587871F vscroll$up.png
 P 5FD17798 vscroll.png
 P DDDDFB9E vslider$bar.png
 P 01BAE7F5 vslider.png
-D game
+D config
+R 026FD9CA AIConfig.json
+D gameSkin
 P 9E6481EC bubble_0.png
 P 8BC47ADF bubble_1.png
 P 21063FB1 bubble_2.png
@@ -59,8 +61,22 @@ P BA28BD65 img_blank.png
 P 8C371FC4 img_btnGet.png
 P F2AF29B5 img_btnStart.png
 P CF7D4DA2 img_energy.png
+R 53C796DE img_head.jpg
 P F9DB3575 img_star.png
 P 8BC038C5 img_txtEat.png
+P 11390549 img_txtMatch.png
+D loadSkin
+P BA28BD65 img_blank.png
+R 7A942D75 img_txtTips.png
+P 43E33ECD progress$bar.png
+P DD6721BB progress.png
+D sound
+R 347C83FF audio_click.mp3
+R C0507017 audio_eat.mp3
+R C68771F1 audio_fail.mp3
+R 5108251F audio_return.mp3
+R 3F8E3368 audio_win.mp3
+R 230B9D89 music_bg.mp3
 D chat/emoji
 P 69397704 emoji_1-obj-1.png
 P 9BCE4EFA emoji_1-obj-2.png
