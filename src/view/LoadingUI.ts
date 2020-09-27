@@ -1,3 +1,5 @@
+import Resize from "../common/Resize";
+
 export default class LoadingUI extends Laya.Script {   
     private _progress:Laya.ProgressBar;
     constructor() {
@@ -11,6 +13,7 @@ export default class LoadingUI extends Laya.Script {
     onEnable(): void {
         this._progress.value=0;
         this.owner.on(Laya.Event.PROGRESS,this,this.onProgress);
+        Laya.stage.on(Laya.Event.RESIZE,this,this.onResize);
     }
 
     onProgress(value:number){
@@ -21,5 +24,10 @@ export default class LoadingUI extends Laya.Script {
 
     onDisable(): void {
         this.owner.off(Laya.Event.PROGRESS,this,this.onProgress);
+        Laya.stage.off(Laya.Event.RESIZE,this,this.onResize);
+    }
+
+    onResize(){
+        (this.owner as Laya.Scene).scale(Resize.minScale,Resize.minScale);
     }
 }

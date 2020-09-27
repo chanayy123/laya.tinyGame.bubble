@@ -1,11 +1,12 @@
 {
     "x":0,
     "type":"View",
-    "selectedBox":2,
+    "selectedBox":20,
+    "selecteID":33,
     "searchKey":"View",
-    "props":{"width":720,"sceneColor":"#ffffff","height":67},
+    "props":{"width":720,"sceneColor":"#d1c6c5","height":1280},
     "nodeParent":-1,
-    "maxID":20,
+    "maxID":34,
     "label":"View",
     "isOpen":true,
     "isDirectory":true,
@@ -17,7 +18,7 @@
             "x":15,
             "type":"Image",
             "searchKey":"Image",
-            "props":{"skin":"gameSkin/img_bg1.png","centerY":0,"centerX":-194},
+            "props":{"top":20,"skin":"gameSkin/img_bg1.png","centerX":-194},
             "nodeParent":2,
             "label":"Image",
             "isOpen":false,
@@ -39,13 +40,14 @@
                     "compId":5,
                     "child":[
                         ]
-                }]
+                }],
+            "$HIDDEN":false
         },
         {
             "x":15,
             "type":"Image",
             "searchKey":"Image",
-            "props":{"skin":"gameSkin/img_bg1.png","centerY":0,"centerX":35},
+            "props":{"top":20,"skin":"gameSkin/img_bg1.png","centerX":35},
             "nodeParent":2,
             "label":"Image",
             "isOpen":false,
@@ -71,10 +73,10 @@
         {
             "x":15,
             "type":"Box",
-            "searchKey":"Box",
-            "props":{"y":80,"width":196,"right":10,"height":280},
+            "searchKey":"Box,boxList",
+            "props":{"y":80,"width":196,"var":"boxList","right":10,"height":280},
             "nodeParent":2,
-            "label":"Box",
+            "label":"boxList",
             "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
@@ -113,18 +115,17 @@
         {
             "x":15,
             "type":"Image",
-            "searchKey":"Image,imgKill",
-            "props":{"var":"imgKill","top":20,"skin":"gameSkin/img_bgKill.png","centerX":0},
+            "searchKey":"Image,groupKill",
+            "props":{"var":"groupKill","top":20,"skin":"gameSkin/img_bgKill.png","centerX":0},
             "nodeParent":2,
-            "label":"imgKill",
-            "isOpen":true,
+            "label":"groupKill",
+            "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":16,
             "child":[
                 {
-                    "x":30,
                     "type":"Label",
                     "searchKey":"Label,labelSrc",
                     "props":{"y":109,"x":217,"width":103,"var":"labelSrc","text":"XXX","height":28,"fontSize":28,"color":"#ffffff"},
@@ -138,7 +139,6 @@
                         ]
                 },
                 {
-                    "x":30,
                     "type":"Label",
                     "searchKey":"Label,labelDst",
                     "props":{"y":167,"x":287,"width":163,"var":"labelDst","text":"XXX","height":28,"fontSize":28,"color":"#ffffff","align":"right"},
@@ -152,7 +152,6 @@
                         ]
                 },
                 {
-                    "x":30,
                     "type":"Image",
                     "searchKey":"Image",
                     "props":{"y":111,"x":273.013671875,"skin":"gameSkin/img_txtEat.png"},
@@ -162,6 +161,92 @@
                     "isAniNode":true,
                     "hasChild":false,
                     "compId":19,
+                    "child":[
+                        ]
+                }]
+        },
+        {
+            "x":15,
+            "type":"Image",
+            "searchKey":"Image,groupMatch",
+            "props":{"var":"groupMatch","top":0,"skin":"loadSkin/img_blank.png","right":0,"left":0,"bottom":0},
+            "nodeParent":2,
+            "label":"groupMatch",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":20,
+            "child":[
+                {
+                    "x":30,
+                    "type":"Image",
+                    "searchKey":"Image",
+                    "props":{"skin":"gameSkin/img_txtMatch.png","centerY":-50,"centerX":0},
+                    "nodeParent":20,
+                    "label":"Image",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":23,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"HBox",
+                    "searchKey":"HBox,matchBox1",
+                    "props":{"var":"matchBox1","space":15,"centerY":150,"centerX":0,"align":"middle"},
+                    "nodeParent":20,
+                    "label":"matchBox1",
+                    "isOpen":true,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":25,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"HBox",
+                    "searchKey":"HBox,matchBox2",
+                    "props":{"x":360,"var":"matchBox2","space":15,"centerY":270,"centerX":0,"align":"middle"},
+                    "nodeParent":20,
+                    "label":"matchBox2",
+                    "isOpen":true,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":30,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"ProgressBar",
+                    "searchKey":"ProgressBar,progress",
+                    "props":{"y":1023,"width":476,"var":"progress","skin":"loadSkin/progress.png","height":35,"centerY":400,"centerX":0},
+                    "nodeParent":20,
+                    "label":"progress",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":22,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "searchKey":"Label,labelProgress",
+                    "props":{"var":"labelProgress","text":"已匹配","fontSize":28,"color":"#ffffff","centerY":447,"centerX":0},
+                    "nodeParent":20,
+                    "label":"labelProgress",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":33,
                     "child":[
                         ]
                 }]

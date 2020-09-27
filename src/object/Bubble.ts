@@ -73,7 +73,7 @@ export default class Bubble extends Laya.Sprite{
     constructor(){
         super();
     }
-    
+
     init(size:number,skin:number,isAI:boolean){
         this._shapeSp =  this._shapeSp || new Laya.Sprite();
         this.addChild(this._shapeSp);
@@ -90,8 +90,20 @@ export default class Bubble extends Laya.Sprite{
         this.State = BubbleState.NORMAL;
     }
 
+    reset(){
+        this.State = BubbleState.INVALID;
+        this._bubbleSize = 0;
+        this._normalShape = null;
+        this._moveShape = null;
+        this.attacker=null;
+        this.aimTarget=null;
+        this.clearVisions();
+        this.clearAlarms();
+    }
+
     initStar(skinIdx:number){
-        this._starShapeSp = this._starShapeSp || new Laya.Sprite();
+        if(this._starShapeSp) return;
+        this._starShapeSp = new Laya.Sprite();
         let size = 260;
         let halfSize = size/2;
         let path= [];
@@ -319,16 +331,6 @@ export default class Bubble extends Laya.Sprite{
         this._alarmBubbleList.push(target);
     }
 
-    public isInVision(target:Laya.Sprite):boolean{
-        if(this._visionBubbleList && this._visionBubbleList.indexOf(target as Bubble) != -1){
-            return true;
-        }
-        if(this._visionObsList && this._visionObsList.indexOf(target as Obstacle) != -1){
-            return true;
-        }
-        return false;
-    }
-
     private draw(shape:BubbleShape){
         this._shapeSp.graphics.clear();
         let circleNums = this.circleNums;
@@ -351,7 +353,6 @@ export default class Bubble extends Laya.Sprite{
 
     public set State(value:BubbleState){
         if(this.State == value){
-            if(value == BubbleState.SPIKE) console.log("击杀状态中:再次击杀");
             return;
         }
         let preState = this._state;
@@ -489,7 +490,7 @@ export default class Bubble extends Laya.Sprite{
     }
 
     public get isAlive():boolean{
-        return this.State != BubbleState.DEAD;
+        return this.State != BubbleState.INVALID && this.State != BubbleState.DEAD;
     }
 
     public set moveSpeed(value:number){
@@ -625,7 +626,7 @@ export default class Bubble extends Laya.Sprite{
                             baseTime = 1000;
                         }else if(rand <=60){
                             this.State = BubbleState.NORMAL;
-                            baseTime = 200;
+                            baseTime = 100;
                         }else{
                             this.State = BubbleState.MOVE;
                             baseTime = 1000;
@@ -633,7 +634,7 @@ export default class Bubble extends Laya.Sprite{
                     }
                 }
             }
-            let time = baseTime + Math.floor(Math.random()*500);
+            let time = baseTime + Math.floor(Math.random()*300);
             await GameUtil.wait(time);
             if(!this.activeInHierarchy) break;
         }
@@ -702,6 +703,7 @@ export class BubbleFactory{
     }
     public static Recycle(bubble:Bubble){
         bubble.removeSelf();
+        bubble.reset();
         Laya.Pool.recover(this.SIGN_BUBBLE,bubble);
     }
 

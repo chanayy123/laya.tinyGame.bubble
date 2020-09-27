@@ -2,11 +2,11 @@
     "x":0,
     "type":"Scene",
     "selectedBox":2,
-    "selecteID":13,
+    "selecteID":16,
     "searchKey":"Scene",
     "props":{"width":720,"sceneColor":"#aba4a4","mouseEnabled":true,"height":1280},
     "nodeParent":-1,
-    "maxID":16,
+    "maxID":20,
     "label":"Scene",
     "isOpen":true,
     "isDirectory":true,
@@ -17,61 +17,45 @@
         {
             "x":15,
             "type":"Image",
-            "searchKey":"Image",
-            "props":{"top":0,"skin":"loadSkin/img_blank.png","right":0,"left":0,"bottom":0},
+            "searchKey":"Image,uiGroup",
+            "props":{"y":0,"x":0,"top":0,"skin":"loadSkin/img_blank.png","right":0,"name":"uiGroup","left":0,"bottom":0},
             "nodeParent":2,
-            "label":"Image",
-            "isDirectory":false,
+            "label":"uiGroup",
+            "isOpen":true,
+            "isDirectory":true,
             "isAniNode":true,
-            "hasChild":false,
+            "hasChild":true,
             "compId":3,
             "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"ProgressBar",
-            "searchKey":"ProgressBar,progress,progress",
-            "props":{"width":476,"var":"progress","skin":"loadSkin/progress.png","name":"progress","height":35,"centerY":100,"centerX":0},
-            "nodeParent":2,
-            "label":"progress",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":13,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Image",
-            "searchKey":"Image",
-            "props":{"skin":"loadSkin/img_txtTips.png","centerX":0,"bottom":100},
-            "nodeParent":2,
-            "label":"Image",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":14,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Script",
-            "switchAble":true,
-            "source":"src/control/LaunchControl.ts",
-            "searchKey":"Script,LaunchControl",
-            "removeAble":true,
-            "props":{},
-            "nodeParent":2,
-            "label":"LaunchControl",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":15,
-            "child":[
-                ]
+                {
+                    "x":30,
+                    "type":"ProgressBar",
+                    "searchKey":"ProgressBar,progress,progress",
+                    "props":{"y":723,"x":122,"width":476,"var":"progress","skin":"loadSkin/progress.png","name":"progress","height":35,"centerY":100,"centerX":0},
+                    "nodeParent":3,
+                    "label":"progress",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":13,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Image",
+                    "searchKey":"Image,img_tips",
+                    "props":{"y":1122,"x":34,"var":"img_tips","skin":"loadSkin/img_txtTips.png","centerX":0,"bottom":100},
+                    "nodeParent":3,
+                    "label":"img_tips",
+                    "isOpen":false,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":14,
+                    "child":[
+                        ]
+                }]
         },
         {
             "x":15,
@@ -86,7 +70,24 @@
             "isDirectory":false,
             "isAniNode":true,
             "hasChild":false,
-            "compId":10,
+            "compId":16,
+            "child":[
+                ]
+        },
+        {
+            "x":15,
+            "type":"Script",
+            "switchAble":true,
+            "source":"src/control/LaunchControl.ts",
+            "searchKey":"Script,LaunchControl",
+            "removeAble":true,
+            "props":{"y":0,"x":0},
+            "nodeParent":2,
+            "label":"LaunchControl",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":15,
             "child":[
                 ]
         }],

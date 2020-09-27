@@ -324,6 +324,51 @@
         }
     }
 
+    class Resize extends Laya.Script {
+        constructor() {
+            super();
+            this.isFitStageSize = true;
+            this.isReCalcScale = true;
+        }
+        static get minScale() {
+            return this._minScale || 1;
+        }
+        static get maxScale() {
+            return this._maxScale || 1;
+        }
+        onEnable() {
+            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
+            this.onResize();
+        }
+        onDisable() {
+            Laya.stage.off(Laya.Event.RESIZE, this, this.onResize);
+        }
+        onResize() {
+            if (this.isReCalcScale) {
+                Resize._minScale = Math.min(Laya.stage.width / Resize.DesignWidth, Laya.stage.height / Resize.DesignHeight);
+                Resize._maxScale = Math.max(Laya.stage.width / Resize.DesignWidth, Laya.stage.height / Resize.DesignHeight);
+                console.log(`当前适配最小缩放/最大缩放:${Resize.minScale}/${Resize.maxScale}`);
+            }
+            if (this.isFitStageSize) {
+                this.owner.size(Laya.stage.width, Laya.stage.height);
+            }
+            this.owner.callLater(this._doResize, [this]);
+        }
+        _doResize(script) {
+            let comps = script.owner.getComponents(Laya.Script);
+            for (let key in comps) {
+                let comp = comps[key];
+                if (comp != script) {
+                    comp.onResize && comp.onResize();
+                }
+            }
+            let owner = script.owner;
+            owner.onResize && owner.onResize();
+        }
+    }
+    Resize.DesignWidth = 720;
+    Resize.DesignHeight = 1280;
+
     class GameUtil {
         static MakeRegularBubble(centerX, centerY, radius, vtCount = 512) {
             var points = vtCount;
@@ -543,11 +588,14 @@
         }
         onAwake() {
             this.owner.autoDestroyAtClosed = true;
-            this._progress = this.owner.getChildByName("progress");
+            this._group = this.owner.getChildByName("uiGroup");
+            this._progress = this._group.getChildByName("progress");
         }
         onEnable() {
             this._progress.value = 0;
             SceneManager.Instance.open(ResData.RES_SCENE_SELECT, GameUtil.wait(LaunchControl.MinLoadTime), false, true, Laya.Handler.create(this, this.onProgress, null, false));
+        }
+        onDisable() {
         }
         onProgress(value) {
             this._progress.value = value;
@@ -555,24 +603,11 @@
         onClick(e) {
             SoundHelper.playMusic(ResData.RES_SOUND_BG, true);
         }
-        onDisable() {
+        onResize() {
+            this._group.scale(Resize.minScale, Resize.minScale);
         }
     }
     LaunchControl.MinLoadTime = 1000;
-
-    class Resize extends Laya.Script {
-        constructor() { super(); }
-        onEnable() {
-            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
-            this.onResize();
-        }
-        onDisable() {
-            Laya.stage.off(Laya.Event.RESIZE, this, this.onResize);
-        }
-        onResize() {
-            this.owner.size(Laya.stage.width, Laya.stage.height);
-        }
-    }
 
     class LoadingUI extends Laya.Script {
         constructor() {
@@ -584,6 +619,7 @@
         onEnable() {
             this._progress.value = 0;
             this.owner.on(Laya.Event.PROGRESS, this, this.onProgress);
+            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
         }
         onProgress(value) {
             let time = new Date().getTime();
@@ -592,6 +628,10 @@
         }
         onDisable() {
             this.owner.off(Laya.Event.PROGRESS, this, this.onProgress);
+            Laya.stage.off(Laya.Event.RESIZE, this, this.onResize);
+        }
+        onResize() {
+            this.owner.scale(Resize.minScale, Resize.minScale);
         }
     }
 
@@ -609,7 +649,7 @@
                     this.createView(GameRenderUI.uiView);
                 }
             }
-            GameRenderUI.uiView = { "type": "View", "props": { "width": 720, "height": 67 }, "compId": 2, "child": [{ "type": "Image", "props": { "skin": "gameSkin/img_bg1.png", "centerY": 0, "centerX": -194, "sizeGrid": "20,25,20,25" }, "compId": 3, "child": [{ "type": "Label", "props": { "var": "labelTotalScore", "text": "得分:0", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 5 }] }, { "type": "Image", "props": { "skin": "gameSkin/img_bg1.png", "centerY": 0, "centerX": 35, "sizeGrid": "20,25,20,25" }, "compId": 4, "child": [{ "type": "Label", "props": { "y": 10, "x": -125, "var": "labelTime", "text": "02:59", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 6 }] }, { "type": "Box", "props": { "y": 80, "width": 196, "right": 10, "height": 280 }, "compId": 15, "child": [{ "type": "Image", "props": { "var": "img_bgRankList", "skin": "gameSkin/img_bg2.png", "right": 0, "left": 0, "height": 280, "sizeGrid": "10,10,10,10" }, "compId": 7 }, { "type": "List", "props": { "y": 10, "var": "rankList", "spaceY": 5, "right": 0, "repeatY": 1, "repeatX": 1, "left": 0 }, "compId": 8 }] }, { "type": "Image", "props": { "var": "imgKill", "top": 20, "skin": "gameSkin/img_bgKill.png", "centerX": 0 }, "compId": 16, "child": [{ "type": "Label", "props": { "y": 109, "x": 217, "width": 103, "var": "labelSrc", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff" }, "compId": 17 }, { "type": "Label", "props": { "y": 167, "x": 287, "width": 163, "var": "labelDst", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff", "align": "right" }, "compId": 18 }, { "type": "Image", "props": { "y": 111, "x": 273.013671875, "skin": "gameSkin/img_txtEat.png" }, "compId": 19 }] }], "loadList": ["gameSkin/img_bg1.png", "gameSkin/img_bg2.png", "gameSkin/img_bgKill.png", "gameSkin/img_txtEat.png"], "loadList3D": [] };
+            GameRenderUI.uiView = { "type": "View", "props": { "width": 720, "height": 1280 }, "compId": 2, "child": [{ "type": "Image", "props": { "top": 20, "skin": "gameSkin/img_bg1.png", "centerX": -194, "sizeGrid": "20,25,20,25" }, "compId": 3, "child": [{ "type": "Label", "props": { "var": "labelTotalScore", "text": "得分:0", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 5 }] }, { "type": "Image", "props": { "top": 20, "skin": "gameSkin/img_bg1.png", "centerX": 35, "sizeGrid": "20,25,20,25" }, "compId": 4, "child": [{ "type": "Label", "props": { "y": 10, "x": -125, "var": "labelTime", "text": "02:59", "fontSize": 26, "color": "#ffffff", "centerY": 0, "centerX": 0 }, "compId": 6 }] }, { "type": "Box", "props": { "y": 80, "width": 196, "var": "boxList", "right": 10, "height": 280 }, "compId": 15, "child": [{ "type": "Image", "props": { "var": "img_bgRankList", "skin": "gameSkin/img_bg2.png", "right": 0, "left": 0, "height": 280, "sizeGrid": "10,10,10,10" }, "compId": 7 }, { "type": "List", "props": { "y": 10, "var": "rankList", "spaceY": 5, "right": 0, "repeatY": 1, "repeatX": 1, "left": 0 }, "compId": 8 }] }, { "type": "Image", "props": { "var": "groupKill", "top": 20, "skin": "gameSkin/img_bgKill.png", "centerX": 0 }, "compId": 16, "child": [{ "type": "Label", "props": { "y": 109, "x": 217, "width": 103, "var": "labelSrc", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff" }, "compId": 17 }, { "type": "Label", "props": { "y": 167, "x": 287, "width": 163, "var": "labelDst", "text": "XXX", "height": 28, "fontSize": 28, "color": "#ffffff", "align": "right" }, "compId": 18 }, { "type": "Image", "props": { "y": 111, "x": 273.013671875, "skin": "gameSkin/img_txtEat.png" }, "compId": 19 }] }, { "type": "Image", "props": { "var": "groupMatch", "top": 0, "skin": "loadSkin/img_blank.png", "right": 0, "left": 0, "bottom": 0, "sizeGrid": "4,4,4,4" }, "compId": 20, "child": [{ "type": "Image", "props": { "skin": "gameSkin/img_txtMatch.png", "centerY": -50, "centerX": 0 }, "compId": 23 }, { "type": "HBox", "props": { "var": "matchBox1", "space": 15, "centerY": 150, "centerX": 0, "align": "middle" }, "compId": 25 }, { "type": "HBox", "props": { "x": 360, "var": "matchBox2", "space": 15, "centerY": 270, "centerX": 0, "align": "middle" }, "compId": 30 }, { "type": "ProgressBar", "props": { "y": 1023, "width": 476, "var": "progress", "skin": "loadSkin/progress.png", "height": 35, "centerY": 400, "centerX": 0 }, "compId": 22 }, { "type": "Label", "props": { "var": "labelProgress", "text": "已匹配", "fontSize": 28, "color": "#ffffff", "centerY": 447, "centerX": 0 }, "compId": 33 }] }], "loadList": ["gameSkin/img_bg1.png", "gameSkin/img_bg2.png", "gameSkin/img_bgKill.png", "gameSkin/img_txtEat.png", "loadSkin/img_blank.png", "gameSkin/img_txtMatch.png", "loadSkin/progress.png"], "loadList3D": [] };
             bubble.GameRenderUI = GameRenderUI;
             REG("ui.bubble.GameRenderUI", GameRenderUI);
             class GameResultRenderUI extends Laya.View {
@@ -621,9 +661,21 @@
                     this.createView(GameResultRenderUI.uiView);
                 }
             }
-            GameResultRenderUI.uiView = { "type": "View", "props": { "width": 720, "mouseEnabled": true, "height": 1280 }, "compId": 2, "child": [{ "type": "Image", "props": { "top": 0, "skin": "gameSkin/img_blank.png", "right": 0, "left": 0, "bottom": 0, "sizeGrid": "4,4,4,4" }, "compId": 16 }, { "type": "Box", "props": { "width": 500, "height": 450, "centerY": -320, "centerX": 0 }, "compId": 31, "child": [{ "type": "Image", "props": { "y": 213.5, "x": 251, "var": "img_star", "skin": "gameSkin/img_star.png", "rotation": 0, "centerX": 0, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 17 }, { "type": "Image", "props": { "y": 160.5, "x": -109, "skin": "gameSkin/img_bgTitle.png", "centerX": 0 }, "compId": 18 }, { "type": "Label", "props": { "y": 180.5, "x": -109, "var": "labelRank", "text": "排名", "fontSize": 45, "color": "#ffffff", "centerX": 0 }, "compId": 28 }] }, { "type": "Box", "props": { "width": 600, "var": "boxHtmlTxt", "height": 100, "centerY": -122, "centerX": 0 }, "compId": 20, "child": [{ "type": "HTMLDivElement", "props": { "x": 0, "width": 218, "var": "htmlTxt", "text": "被XXX吃掉了", "height": 60, "fontSize": 32, "centerY": -159, "runtime": "laya.html.dom.HTMLDivElement" }, "compId": 19 }] }, { "type": "Label", "props": { "var": "labelScore", "text": "积分: 123", "fontSize": 45, "color": "#ffffff", "centerY": 24, "centerX": 0 }, "compId": 21 }, { "type": "Image", "props": { "skin": "gameSkin/img_energy.png", "centerY": 200, "centerX": -154 }, "compId": 23, "child": [{ "type": "Label", "props": { "y": -5, "x": 33, "var": "labelEnergy", "text": "123", "fontSize": 45, "color": "#ffffff" }, "compId": 22 }] }, { "type": "Image", "props": { "x": 455, "var": "btnGet", "skin": "gameSkin/img_btnGet.png", "centerY": 200, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 24, "child": [{ "type": "Script", "props": { "runtime": "common/ScaleButton.ts" }, "compId": 30 }] }], "loadList": ["gameSkin/img_blank.png", "gameSkin/img_star.png", "gameSkin/img_bgTitle.png", "gameSkin/img_energy.png", "gameSkin/img_btnGet.png"], "loadList3D": [] };
+            GameResultRenderUI.uiView = { "type": "View", "props": { "width": 720, "mouseEnabled": true, "height": 1280 }, "compId": 2, "child": [{ "type": "Image", "props": { "var": "uiGroup", "top": 0, "skin": "gameSkin/img_blank.png", "right": 0, "left": 0, "bottom": 0, "sizeGrid": "4,4,4,4" }, "compId": 16, "child": [{ "type": "Box", "props": { "y": 95, "x": 110, "width": 500, "height": 450, "centerY": -320, "centerX": 0 }, "compId": 31, "child": [{ "type": "Image", "props": { "y": 213.5, "x": 251, "var": "img_star", "skin": "gameSkin/img_star.png", "rotation": 0, "centerX": 0, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 17 }, { "type": "Image", "props": { "y": 160.5, "x": -109, "skin": "gameSkin/img_bgTitle.png", "centerX": 0 }, "compId": 18 }, { "type": "Label", "props": { "y": 180.5, "x": -109, "var": "labelRank", "text": "排名", "fontSize": 45, "color": "#ffffff", "centerX": 0 }, "compId": 28 }] }, { "type": "Box", "props": { "y": 468, "x": 60, "width": 600, "var": "boxHtmlTxt", "height": 100, "centerY": -122, "centerX": 0 }, "compId": 20, "child": [{ "type": "HTMLDivElement", "props": { "x": 0, "width": 218, "var": "htmlTxt", "text": "被XXX吃掉了", "height": 60, "fontSize": 32, "centerY": -159, "runtime": "laya.html.dom.HTMLDivElement" }, "compId": 19 }] }, { "type": "Label", "props": { "y": 642, "x": 265, "var": "labelScore", "text": "积分: 123", "fontSize": 45, "color": "#ffffff", "centerY": 24, "centerX": 0 }, "compId": 21 }, { "type": "Image", "props": { "y": 840, "var": "btnGet", "skin": "gameSkin/img_btnGet.png", "centerY": 200, "centerX": 78, "anchorY": 0.5, "anchorX": 0.5 }, "compId": 24, "child": [{ "type": "Script", "props": { "runtime": "common/ScaleButton.ts" }, "compId": 30 }] }, { "type": "Box", "props": { "width": 84, "height": 70, "centerY": 200, "centerX": -114 }, "compId": 32, "child": [{ "type": "Label", "props": { "var": "labelEnergy", "text": "0", "right": 0, "fontSize": 45, "color": "#ffffff", "centerY": 0, "align": "right" }, "compId": 22, "child": [{ "type": "Image", "props": { "y": 6, "x": -34, "skin": "gameSkin/img_energy.png", "centerY": 0 }, "compId": 23 }] }] }] }], "loadList": ["gameSkin/img_blank.png", "gameSkin/img_star.png", "gameSkin/img_bgTitle.png", "gameSkin/img_btnGet.png", "gameSkin/img_energy.png"], "loadList3D": [] };
             bubble.GameResultRenderUI = GameResultRenderUI;
             REG("ui.bubble.GameResultRenderUI", GameResultRenderUI);
+            class HeadRenderUI extends Laya.View {
+                constructor() {
+                    super();
+                }
+                createChildren() {
+                    super.createChildren();
+                    this.createView(HeadRenderUI.uiView);
+                }
+            }
+            HeadRenderUI.uiView = { "type": "View", "props": { "width": 60, "height": 60 }, "compId": 2, "child": [{ "type": "Image", "props": { "var": "imgHead", "top": 0, "skin": "gameSkin/img_head.jpg", "right": 0, "left": 0, "bottom": 0 }, "compId": 3, "child": [{ "type": "Sprite", "props": { "y": 28, "x": 28, "renderType": "mask" }, "compId": 4, "child": [{ "type": "Circle", "props": { "radius": 26, "lineWidth": 1, "fillColor": "#ff0000" }, "compId": 5 }] }] }, { "type": "Label", "props": { "var": "labelName", "text": "名字", "fontSize": 18, "color": "#ffffff", "centerX": 0, "bottom": -20 }, "compId": 6 }], "loadList": ["gameSkin/img_head.jpg"], "loadList3D": [] };
+            bubble.HeadRenderUI = HeadRenderUI;
+            REG("ui.bubble.HeadRenderUI", HeadRenderUI);
             class RankItemRenderUI extends Laya.View {
                 constructor() {
                     super();
@@ -642,15 +694,49 @@
     class GameUI extends ui.bubble.GameRenderUI {
         constructor() {
             super();
-            this.initUI();
         }
-        initUI() {
+        onAwake() {
             this.img_bgRankList.alpha = 0.5;
-            this.img_bgRankList.visible = false;
             this.rankList.itemRender = ui.bubble.RankItemRenderUI;
             this.rankList.renderHandler = new Laya.Handler(this, this.onItemRender);
+        }
+        onEnable() {
             this.rankList.array = [];
-            this.imgKill.visible = false;
+            this.boxList.visible = false;
+            this.groupKill.visible = false;
+            this.groupMatch.visible = false;
+        }
+        onDisable() {
+        }
+        showMatch(list) {
+            return __awaiter(this, void 0, void 0, function* () {
+                this.groupMatch.visible = true;
+                let originBox1Y = this.matchBox1.centerY;
+                this.matchBox1.centerY = this.matchBox2.centerY;
+                this.progress.value = 0;
+                let tweenTime = 200;
+                let count = 0;
+                for (let i = -1; i < list.length; ++i) {
+                    if (i < 4) {
+                        let player = new ui.bubble.HeadRenderUI();
+                        player.labelName.text = i == -1 ? "我" : list[i].name;
+                        this.matchBox1.addChild(player);
+                        if (i == 3) {
+                            Laya.Tween.to(this.matchBox1, { centerY: originBox1Y }, tweenTime);
+                        }
+                    }
+                    else {
+                        let player = new ui.bubble.HeadRenderUI();
+                        player.labelName.text = list[i].name;
+                        this.matchBox2.addChild(player);
+                    }
+                    this.progress.value += 0.1;
+                    ++count;
+                    this.labelProgress.text = `已匹配:${count}/10`;
+                    yield GameUtil.wait(tweenTime);
+                }
+                this.groupMatch.visible = false;
+            });
         }
         onItemRender(cell, index) {
             let data = cell.dataSource;
@@ -663,7 +749,7 @@
         updateRankList(...data) {
             this.rankList.array = data;
             this.rankList.repeatY = data.length;
-            this.img_bgRankList.visible = data.length > 0;
+            this.boxList.visible = data.length > 0;
             this.img_bgRankList.height = this.rankList.height + 15;
         }
         showTotalScore(score) {
@@ -673,15 +759,17 @@
             this.labelTime.text = GameUtil.fmtTime(time);
         }
         showKillTip(srcName, dstName, duration = 2000) {
-            this.imgKill.visible = true;
+            this.groupKill.visible = true;
             this.labelSrc.text = srcName;
             this.labelDst.text = dstName;
             Laya.timer.clearAll(this);
             Laya.timer.once(duration, this, this.hideKillTip);
         }
         hideKillTip() {
-            this.imgKill.visible = false;
-            this.imgKill.activeInHierarchy;
+            this.groupKill.visible = false;
+        }
+        onResize() {
+            this.groupMatch.scale(Resize.minScale, Resize.minScale);
         }
     }
 
@@ -695,11 +783,16 @@
             this.htmlTxt.style.align = Laya.HTMLStyle.ALIGN_CENTER;
             this.htmlTxt.style.width = this.boxHtmlTxt.width;
             this.htmlTxt.style.height = this.boxHtmlTxt.height;
-            this.on(Laya.Event.CLICK, this, this.onBtnClick);
             this.mouseEnabled = true;
         }
         onAwake() {
             this.initUI();
+        }
+        onEnable() {
+            this.on(Laya.Event.CLICK, this, this.onBtnClick);
+        }
+        onDisable() {
+            this.off(Laya.Event.CLICK, this, this.onBtnClick);
         }
         onBtnClick(e) {
             if (e.target == this.btnGet) {
@@ -727,6 +820,37 @@
         }
         hide() {
             this.visible = false;
+        }
+        onResize() {
+            this.uiGroup.scale(Resize.minScale, Resize.minScale);
+        }
+    }
+
+    class MatchData {
+        constructor() {
+            this.makeFakeData();
+        }
+        static get Instance() {
+            if (this._instance == null) {
+                this._instance = new MatchData();
+            }
+            return this._instance;
+        }
+        makeFakeData() {
+            this._matchList = [];
+            for (let i = 0; i < 9; ++i) {
+                this._matchList.push(new MatchPlayer(`路人${i}号`));
+            }
+            this._matchList.sort((l, r) => Math.random() - 0.5);
+        }
+        get matchList() {
+            return this._matchList;
+        }
+    }
+    class MatchPlayer {
+        constructor(name, head = -1) {
+            this.name = name;
+            this.head = head;
         }
     }
 
@@ -832,8 +956,20 @@
             this.setMoveDelta(0, 0);
             this.State = BubbleState.NORMAL;
         }
+        reset() {
+            this.State = BubbleState.INVALID;
+            this._bubbleSize = 0;
+            this._normalShape = null;
+            this._moveShape = null;
+            this.attacker = null;
+            this.aimTarget = null;
+            this.clearVisions();
+            this.clearAlarms();
+        }
         initStar(skinIdx) {
-            this._starShapeSp = this._starShapeSp || new Laya.Sprite();
+            if (this._starShapeSp)
+                return;
+            this._starShapeSp = new Laya.Sprite();
             let size = 260;
             let halfSize = size / 2;
             let path = [];
@@ -1023,15 +1159,6 @@
             this._alarmBubbleList = this._alarmBubbleList || [];
             this._alarmBubbleList.push(target);
         }
-        isInVision(target) {
-            if (this._visionBubbleList && this._visionBubbleList.indexOf(target) != -1) {
-                return true;
-            }
-            if (this._visionObsList && this._visionObsList.indexOf(target) != -1) {
-                return true;
-            }
-            return false;
-        }
         draw(shape) {
             this._shapeSp.graphics.clear();
             let circleNums = this.circleNums;
@@ -1054,8 +1181,6 @@
         }
         set State(value) {
             if (this.State == value) {
-                if (value == BubbleState.SPIKE)
-                    console.log("击杀状态中:再次击杀");
                 return;
             }
             let preState = this._state;
@@ -1189,7 +1314,7 @@
             return this.State == BubbleState.MOVE;
         }
         get isAlive() {
-            return this.State != BubbleState.DEAD;
+            return this.State != BubbleState.INVALID && this.State != BubbleState.DEAD;
         }
         set moveSpeed(value) {
             this._moveSpeed = value;
@@ -1320,7 +1445,7 @@
                                 }
                                 else if (rand <= 60) {
                                     this.State = BubbleState.NORMAL;
-                                    baseTime = 200;
+                                    baseTime = 100;
                                 }
                                 else {
                                     this.State = BubbleState.MOVE;
@@ -1329,7 +1454,7 @@
                             }
                         }
                     }
-                    let time = baseTime + Math.floor(Math.random() * 500);
+                    let time = baseTime + Math.floor(Math.random() * 300);
                     yield GameUtil.wait(time);
                     if (!this.activeInHierarchy)
                         break;
@@ -1402,6 +1527,7 @@
         }
         static Recycle(bubble) {
             bubble.removeSelf();
+            bubble.reset();
             Laya.Pool.recover(this.SIGN_BUBBLE, bubble);
         }
     }
@@ -1436,25 +1562,13 @@
         constructor() {
             super();
         }
-        static get Instance() {
-            if (GameMap._instance == null) {
-                GameMap._instance = new GameMap();
-            }
-            return this._instance;
-        }
         init(w, h) {
             this.size(w, h);
             this._boundary = new Laya.Point();
             this._boundary.x = Math.ceil(this.width / GameMap.GridSize) * GameMap.GridSize;
             this._boundary.y = Math.ceil(this.height / GameMap.GridSize) * GameMap.GridSize;
             this.drawBg();
-            this.initPlayers();
             this.initObstacles();
-        }
-        addHero(b) {
-            this._bubbleHero = b;
-            b.setMoveBoundary(this._boundary.x, this._boundary.y);
-            this.addChild(b);
         }
         update() {
             this.checkUpdate();
@@ -1529,11 +1643,11 @@
                     icon.graphics.clear();
                     icon.graphics.drawCircle(icon.width / 2, icon.height / 2, icon.width / 2, b.bubbleData.color);
                     icon.graphics.fillText(`${b.rank}`, icon.width / 2, 3, '14px Arial', '#000000', 'center');
-                    this.addChild(icon);
+                    icon.visible = true;
                 }
                 else {
                     let icon = this._bubbleIconMap.get(b);
-                    icon.removeSelf();
+                    icon.visible = false;
                 }
             }
         }
@@ -1679,10 +1793,15 @@
         }
         delBubbleIcon(b) {
             let icon = this._bubbleIconMap.get(b);
-            icon && icon.removeSelf();
+            icon && icon.set_visible(false);
             this._bubbleIconMap.delete(b);
         }
-        initPlayers() {
+        addHero(b) {
+            this._bubbleHero = b;
+            b.setMoveBoundary(this._boundary.x, this._boundary.y);
+            this.addChild(b);
+        }
+        addPlayers(matchList) {
             this._bubbleAIList = [];
             this._delBubbleList = [];
             this._bubbleIconMap = new Map();
@@ -1692,7 +1811,7 @@
                 let posY = Bubble.InitSize + Math.floor(Math.random() * (this._boundary.y - 2 * Bubble.InitSize));
                 let rotation = Math.floor(Math.random() * 360);
                 let ai = BubbleFactory.Create(Bubble.InitSize, idx, true);
-                ai.bubbleName = `路人${i}号`;
+                ai.bubbleName = matchList[i].name;
                 ai.bubbleRotation = rotation;
                 ai.pos(posX, posY);
                 ai.setMoveBoundary(this._boundary.x, this._boundary.y);
@@ -1704,7 +1823,26 @@
                 icon.graphics.drawCircle(icon.width / 2, icon.height / 2, icon.width / 2, Bubble.SKIN_LIST[idx]);
                 icon.graphics.fillText(`${i + 1}`, icon.width / 2, 3, '14px Arial', '#000000', 'center');
                 this._bubbleIconMap.set(ai, icon);
+                icon.visible = false;
+                this.addChild(icon);
             }
+        }
+        recycleObjects() {
+            for (let i = 0; i < this._bubbleAIList.length; ++i) {
+                let b = this._bubbleAIList[i];
+                if (b.isAlive) {
+                    b.State = BubbleState.DEAD;
+                }
+            }
+            this._bubbleAIList = null;
+            if (this._bubbleHero.isAlive) {
+                this._bubbleHero.State = BubbleState.DEAD;
+            }
+            this._bubbleHero = null;
+            for (let i = 0; i < this._obstacleList.length; ++i) {
+                ObstacleFactory.Recycle(this._obstacleList[i]);
+            }
+            this._obstacleList = null;
         }
         initObstacles() {
             this._obstacleList = [];
@@ -1722,6 +1860,12 @@
                 this._obsLayer.addChild(obs);
             }
             this.addChild(this._obsLayer);
+        }
+        hideObstacles() {
+            this._obsLayer.visible = false;
+        }
+        showObstacles() {
+            this._obsLayer.visible = true;
         }
         drawBg() {
             this.graphics.clear();
@@ -1743,7 +1887,6 @@
             }
         }
         onDestroy() {
-            GameMap._instance = null;
         }
     }
     GameMap.GridSize = 50;
@@ -1768,16 +1911,11 @@
         onEnable() {
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
             Laya.stage.on(Laya.Event.MOUSE_UP, this, this.onTouchUp);
-            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize);
-            this.gameState = GameState.START;
+            this.gameState = GameState.MATCH;
         }
         onDisable() {
             Laya.stage.off(Laya.Event.MOUSE_DOWN, this, this.onTouchDown);
             Laya.stage.off(Laya.Event.MOUSE_UP, this, this.onTouchUp);
-            Laya.stage.off(Laya.Event.RESIZE, this, this.onResize);
-        }
-        onResize() {
-            console.log("舞台宽高: " + Laya.stage.width + " " + Laya.stage.height);
         }
         onMouseMove() {
         }
@@ -1817,22 +1955,26 @@
                 return;
             this._map.update();
         }
+        onDestroy() {
+            this._map.recycleObjects();
+            this._map = null;
+            this._gameUI = null;
+            this._gameResultUI = null;
+            this._emotionAnim = null;
+        }
         initMap() {
-            this._map = GameMap.Instance;
+            this._map = new GameMap();
             this._map.init(GameMap.MAP_WIDTH, GameMap.MAP_HEIGHT);
             this.owner.addChildAt(this._map, 0);
-            this._bubbleHero = BubbleFactory.Create(Bubble.InitSize, 0, false);
-            this._bubbleHero.bubbleName = "我";
-            this._bubbleHero.pos(Laya.stage.width / 2, Laya.stage.height / 2);
-            this._map.addHero(this._bubbleHero);
             this._map.eatHandler = Laya.Handler.create(this, this.onEat, null, false);
             this._map.killHandler = Laya.Handler.create(this, this.onKill, null, false);
             this._map.updateRankHandler = Laya.Handler.create(this, this.onRefreshRankList, null, false);
+            this._map.hideObstacles();
         }
         initUI() {
             this._gameUI = this.owner.getChildByName("gameUI");
-            this._gameUI.showTotalScore(this._bubbleHero.eatBeans);
-            this._gameUI.showLeftTime(this._leftTime);
+            this._gameUI.showTotalScore(0);
+            this._gameUI.showLeftTime(0);
             this._gameResultUI = this.owner.getChildByName("gameResultUI");
             this._gameResultUI.hide();
         }
@@ -1846,7 +1988,6 @@
                 this.gameState = GameState.END;
             }
             else if (src == this._bubbleHero) {
-                this._gameUI.showKillTip(src.name, dst.name);
                 this.playEmotionAnim();
             }
             else {
@@ -1863,7 +2004,10 @@
             }
         }
         startMatch() {
-            console.log("开始匹配玩家");
+            return __awaiter(this, void 0, void 0, function* () {
+                yield this._gameUI.showMatch(MatchData.Instance.matchList);
+                this.gameState = GameState.START;
+            });
         }
         startCountDown() {
             return __awaiter(this, void 0, void 0, function* () {
@@ -1905,6 +2049,12 @@
                 this.startMatch();
             }
             else if (now == GameState.START) {
+                this._bubbleHero = BubbleFactory.Create(Bubble.InitSize, 0, false);
+                this._bubbleHero.bubbleName = "我";
+                this._bubbleHero.pos(Laya.stage.width / 2, Laya.stage.height / 2);
+                this._map.addHero(this._bubbleHero);
+                this._map.addPlayers(MatchData.Instance.matchList);
+                this._map.showObstacles();
                 this.startCountDown();
             }
             else if (now == GameState.END) {
@@ -1921,7 +2071,7 @@
         }
         onLoadAnimComplete() {
             let bound = this._emotionAnim.getGraphicBounds();
-            this.owner.addChild(this._emotionAnim);
+            this._emotionAnim.visible = true;
             this._emotionAnim.pivot(bound.x + bound.width / 2, bound.y + bound.height / 2);
             this._emotionAnim.pos(Laya.stage.width / 2, 100);
             this._emotionAnim.autoPlay = true;
@@ -1929,7 +2079,7 @@
         }
         stopEmotionAnim() {
             this._emotionAnim.clear();
-            this._emotionAnim.removeSelf();
+            this._emotionAnim.visible = false;
         }
     }
     GameControl.TouchThreshold = 10;
@@ -1954,6 +2104,10 @@
             this.labelEnergy.text = UserData.Instance.energy.toString();
         }
         onDisable() {
+        }
+        onResize() {
+            this.drawBg();
+            this.uiGroup.scale(Resize.minScale, Resize.minScale);
         }
         onClick(e) {
             SoundHelper.playMusic(ResData.RES_SOUND_BG, true);
@@ -1989,8 +2143,8 @@
         static init() {
             var reg = Laya.ClassUtils.regClass;
             reg("common/ScaleButton.ts", ScaleButton);
-            reg("control/LaunchControl.ts", LaunchControl);
             reg("common/Resize.ts", Resize);
+            reg("control/LaunchControl.ts", LaunchControl);
             reg("view/LoadingUI.ts", LoadingUI);
             reg("view/GameUI.ts", GameUI);
             reg("view/GameResultUI.ts", GameResultUI);

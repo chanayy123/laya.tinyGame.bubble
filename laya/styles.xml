@@ -3,4 +3,5 @@
    <item name="gameSkin/img_bg2.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=10,10,10,10" picType="0" scale="0"/>
    <item name="gameSkin/img_blank.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=4,4,4,4" picType="0" scale="0"/>
    <item name="comp/img_blank.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=2,2,2,2" picType="0" scale="0"/>
+   <item name="loadSkin/img_blank.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=4,4,4,4" picType="0" scale="0"/>
 </res>

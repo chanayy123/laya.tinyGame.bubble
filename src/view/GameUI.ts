@@ -1,20 +1,56 @@
 
 import { GameUtil } from "../common/GameUtil";
+import Resize from "../common/Resize";
+import { MatchPlayer } from "../data/MatchData";
 import { ui } from "../ui/layaMaxUI";
 
 export default class GameUI extends ui.bubble.GameRenderUI{
     constructor(){
         super();
-        this.initUI();
     }
 
-    initUI(){
+    onAwake(){
         this.img_bgRankList.alpha = 0.5;
-        this.img_bgRankList.visible=false;
         this.rankList.itemRender = ui.bubble.RankItemRenderUI;
         this.rankList.renderHandler = new Laya.Handler(this,this.onItemRender);
+    }
+
+    onEnable(){
         this.rankList.array=[];
-        this.imgKill.visible=false;
+        this.boxList.visible=false;
+        this.groupKill.visible=false;
+        this.groupMatch.visible=false;
+    }
+
+    onDisable(){
+    }
+
+    public async showMatch(list:MatchPlayer[]){
+        this.groupMatch.visible=true;
+        let originBox1Y = this.matchBox1.centerY;
+        this.matchBox1.centerY = this.matchBox2.centerY;
+        this.progress.value=0;
+        let tweenTime = 200;
+        let count=0;
+        for(let i=-1;i<list.length;++i){
+            if(i<4){
+                let player = new ui.bubble.HeadRenderUI();
+                player.labelName.text = i==-1?"我":list[i].name;
+                this.matchBox1.addChild(player);
+                if(i == 3){
+                    Laya.Tween.to(this.matchBox1,{centerY:originBox1Y},tweenTime);
+                }
+            }else{
+                let player = new ui.bubble.HeadRenderUI();
+                player.labelName.text = list[i].name;
+                this.matchBox2.addChild(player);
+            }
+            this.progress.value+=0.1;
+            ++count;
+            this.labelProgress.text = `已匹配:${count}/10`;
+            await GameUtil.wait(tweenTime);
+        }
+        this.groupMatch.visible=false;
     }
 
     private onItemRender(cell:ui.bubble.RankItemRenderUI,index:number){
@@ -30,7 +66,7 @@ export default class GameUI extends ui.bubble.GameRenderUI{
     public updateRankList(...data:any[]){
         this.rankList.array =data;
         this.rankList.repeatY=data.length;
-        this.img_bgRankList.visible= data.length>0;
+        this.boxList.visible= data.length>0;
         this.img_bgRankList.height = this.rankList.height+15;
     }
 
@@ -43,7 +79,7 @@ export default class GameUI extends ui.bubble.GameRenderUI{
     }
 
     showKillTip(srcName:string,dstName:string,duration:number=2000){
-        this.imgKill.visible=true;
+        this.groupKill.visible=true;
         this.labelSrc.text = srcName;
         this.labelDst.text = dstName;
         Laya.timer.clearAll(this);
@@ -51,7 +87,11 @@ export default class GameUI extends ui.bubble.GameRenderUI{
     }
 
     hideKillTip(){
-        this.imgKill.visible=false;this.imgKill.activeInHierarchy
+        this.groupKill.visible=false;
+    }
+
+    onResize(){
+        this.groupMatch.scale(Resize.minScale,Resize.minScale);
     }
 
 

@@ -1,4 +1,5 @@
 import { GameUtil } from "../common/GameUtil";
+import Resize from "../common/Resize";
 import SceneManager from "../common/SceneManager";
 import SoundHelper from "../common/SoundHelper";
 import { ResData } from "../data/ResData";
@@ -15,7 +16,6 @@ export default class GameResultUI extends ui.bubble.GameResultRenderUI{
         this.htmlTxt.style.align = Laya.HTMLStyle.ALIGN_CENTER;
         this.htmlTxt.style.width = this.boxHtmlTxt.width;
         this.htmlTxt.style.height = this.boxHtmlTxt.height;
-        this.on(Laya.Event.CLICK,this,this.onBtnClick);
         this.mouseEnabled=true;
     }
 
@@ -23,6 +23,13 @@ export default class GameResultUI extends ui.bubble.GameResultRenderUI{
         this.initUI();
     }
 
+    onEnable(){
+        this.on(Laya.Event.CLICK,this,this.onBtnClick);
+    }
+
+    onDisable(){
+        this.off(Laya.Event.CLICK,this,this.onBtnClick);
+    }
     
 
     private onBtnClick(e:Laya.Event){
@@ -51,6 +58,10 @@ export default class GameResultUI extends ui.bubble.GameResultRenderUI{
 
     public hide(){
         this.visible=false;
+    }
+
+    onResize(){
+        this.uiGroup.scale(Resize.minScale,Resize.minScale);
     }
 
 }

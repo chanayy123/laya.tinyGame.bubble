@@ -1,12 +1,12 @@
 {
     "x":0,
     "type":"Scene",
-    "selectedBox":2,
-    "selecteID":3,
+    "selectedBox":18,
+    "selecteID":12,
     "searchKey":"Scene",
     "props":{"width":720,"sceneColor":"#9e9a9a","mouseEnabled":true,"height":1280},
     "nodeParent":-1,
-    "maxID":18,
+    "maxID":19,
     "label":"Scene",
     "isOpen":true,
     "isDirectory":true,
@@ -14,79 +14,6 @@
     "hasChild":true,
     "compId":2,
     "child":[
-        {
-            "x":15,
-            "type":"Image",
-            "searchKey":"Image,btn_start",
-            "props":{"x":191,"skin":"gameSkin/img_btnStart.png","name":"btn_start","centerY":0,"centerX":0},
-            "nodeParent":2,
-            "label":"btn_start",
-            "isOpen":true,
-            "isDirectory":true,
-            "isAniNode":true,
-            "hasChild":true,
-            "compId":4,
-            "child":[
-                {
-                    "x":30,
-                    "type":"Script",
-                    "switchAble":true,
-                    "source":"src/common/ScaleButton.ts",
-                    "searchKey":"Script,ScaleButton",
-                    "removeAble":true,
-                    "props":{},
-                    "nodeParent":4,
-                    "label":"ScaleButton",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":9,
-                    "child":[
-                        ]
-                }]
-        },
-        {
-            "x":15,
-            "type":"Image",
-            "searchKey":"Image",
-            "props":{"y":36,"skin":"gameSkin/img_bg1.png","centerX":0},
-            "nodeParent":2,
-            "label":"Image",
-            "isOpen":true,
-            "isDirectory":true,
-            "isAniNode":true,
-            "hasChild":true,
-            "compId":12,
-            "child":[
-                {
-                    "x":30,
-                    "type":"Image",
-                    "searchKey":"Image",
-                    "props":{"y":5,"x":12,"skin":"gameSkin/img_energy.png"},
-                    "nodeParent":12,
-                    "label":"Image",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":13,
-                    "child":[
-                        ]
-                },
-                {
-                    "x":30,
-                    "type":"Label",
-                    "searchKey":"Label,labelEnergy",
-                    "props":{"y":590,"x":43,"width":150,"var":"labelEnergy","text":"label","fontSize":28,"color":"#ffffff","centerY":0,"align":"center"},
-                    "nodeParent":12,
-                    "label":"labelEnergy",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":14,
-                    "child":[
-                        ]
-                }]
-        },
         {
             "x":15,
             "type":"Script",
@@ -111,7 +38,7 @@
             "source":"src/control/SelectControl.ts",
             "searchKey":"Script,SelectControl",
             "removeAble":true,
-            "props":{"labelEnergy":"@node:14","btnStart":"@node:4"},
+            "props":{"uiGroup":"@node:18","labelEnergy":"@node:14","btnStart":"@node:4"},
             "nodeParent":2,
             "label":"SelectControl",
             "isDirectory":false,
@@ -120,6 +47,90 @@
             "compId":17,
             "child":[
                 ]
+        },
+        {
+            "x":15,
+            "type":"Box",
+            "searchKey":"Box,uiGroup",
+            "props":{"var":"uiGroup","top":0,"right":0,"left":0,"bottom":0},
+            "nodeParent":2,
+            "label":"uiGroup",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":18,
+            "child":[
+                {
+                    "x":30,
+                    "type":"Image",
+                    "searchKey":"Image,btn_start",
+                    "props":{"y":-36,"x":-1,"skin":"gameSkin/img_btnStart.png","name":"btn_start","centerY":0,"centerX":0},
+                    "nodeParent":18,
+                    "label":"btn_start",
+                    "isOpen":false,
+                    "isDirectory":true,
+                    "isAniNode":true,
+                    "hasChild":true,
+                    "compId":4,
+                    "child":[
+                        {
+                            "type":"Script",
+                            "switchAble":true,
+                            "source":"src/common/ScaleButton.ts",
+                            "searchKey":"Script,ScaleButton",
+                            "removeAble":true,
+                            "props":{},
+                            "nodeParent":4,
+                            "label":"ScaleButton",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":9,
+                            "child":[
+                                ]
+                        }]
+                },
+                {
+                    "x":30,
+                    "type":"Image",
+                    "searchKey":"Image",
+                    "props":{"top":30,"skin":"gameSkin/img_bg1.png","centerX":0},
+                    "nodeParent":18,
+                    "label":"Image",
+                    "isOpen":false,
+                    "isDirectory":true,
+                    "isAniNode":true,
+                    "hasChild":true,
+                    "compId":12,
+                    "child":[
+                        {
+                            "type":"Image",
+                            "searchKey":"Image",
+                            "props":{"y":5,"x":12,"skin":"gameSkin/img_energy.png"},
+                            "nodeParent":12,
+                            "label":"Image",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":13,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "type":"Label",
+                            "searchKey":"Label,labelEnergy",
+                            "props":{"y":590,"x":43,"width":150,"var":"labelEnergy","text":"label","fontSize":28,"color":"#ffffff","centerY":0,"align":"center"},
+                            "nodeParent":12,
+                            "label":"labelEnergy",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":14,
+                            "child":[
+                                ]
+                        }]
+                }]
         }],
     "animations":[
         {

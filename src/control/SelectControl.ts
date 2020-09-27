@@ -1,3 +1,4 @@
+import Resize from "../common/Resize";
 import SceneManager from "../common/SceneManager";
 import SoundHelper from "../common/SoundHelper";
 import { ResData } from "../data/ResData";
@@ -10,6 +11,8 @@ export default class SelectControl extends Laya.Script {
     public btnStart:Laya.Node;   
     /** @prop {name:labelEnergy, type:Node}*/
     public labelEnergy:Laya.Node;    
+    /** @prop {name:uiGroup, type:Node}*/
+    public uiGroup:Laya.Node;
     private _ownerScene:Laya.Scene;
     constructor() { super(); }
     
@@ -19,12 +22,16 @@ export default class SelectControl extends Laya.Script {
         this.drawBg();
     }
 
-
     onEnable(): void {
         (this.labelEnergy as Laya.Label).text = UserData.Instance.energy.toString();
     }
 
     onDisable(): void {
+    }
+
+    onResize(){
+        this.drawBg();
+        (this.uiGroup as Laya.Sprite).scale(Resize.minScale,Resize.minScale);
     }
 
     onClick(e:Laya.Event){

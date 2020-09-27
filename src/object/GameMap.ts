@@ -1,10 +1,10 @@
 import { GameUtil } from "../common/GameUtil";
+import { MatchPlayer } from "../data/MatchData";
 import Bubble, { BubbleData, BubbleFactory, BubbleState } from "./Bubble";
 
 import { Obstacle, ObstacleFactory } from "./Obstacle";
 
 export class GameMap extends Laya.Sprite{
-    private static _instance:GameMap;
     public static GridSize =50;
     public static IconSize = 20;
     public static LineColor = '#000000';
@@ -27,15 +27,8 @@ export class GameMap extends Laya.Sprite{
     public killHandler:Laya.Handler;
     //玩家等级排行刷新回调
     public updateRankHandler:Laya.Handler;
-    private constructor(){
+    constructor(){
         super()
-    }
-
-    public static get Instance():GameMap{
-        if(GameMap._instance == null){
-            GameMap._instance = new GameMap();
-        }
-        return this._instance;
     }
 
     public init(w:number,h:number){
@@ -44,14 +37,7 @@ export class GameMap extends Laya.Sprite{
         this._boundary.x = Math.ceil(this.width/GameMap.GridSize)*GameMap.GridSize;
         this._boundary.y = Math.ceil(this.height/GameMap.GridSize)*GameMap.GridSize;
         this.drawBg();
-        this.initPlayers();
         this.initObstacles();
-    }
-
-    public addHero(b:Bubble){
-        this._bubbleHero = b;
-        b.setMoveBoundary(this._boundary.x,this._boundary.y);
-        this.addChild(b);
     }
 
     public update(){
@@ -128,10 +114,10 @@ export class GameMap extends Laya.Sprite{
                 icon.graphics.clear();
                 icon.graphics.drawCircle(icon.width/2,icon.height/2,icon.width/2,b.bubbleData.color);
                 icon.graphics.fillText(`${b.rank}`,icon.width/2,3,'14px Arial','#000000','center');
-                this.addChild(icon);
+                icon.visible=true;
             }else{
                 let icon = this._bubbleIconMap.get(b);
-                icon.removeSelf();
+                icon.visible=false;
             }
         }
     }
@@ -294,11 +280,17 @@ export class GameMap extends Laya.Sprite{
 
     delBubbleIcon(b:Bubble){
         let icon = this._bubbleIconMap.get(b);
-        icon && icon.removeSelf();
+        icon && icon.set_visible(false);
         this._bubbleIconMap.delete(b);
     }
 
-    initPlayers(){
+    public addHero(b:Bubble){
+        this._bubbleHero = b;
+        b.setMoveBoundary(this._boundary.x,this._boundary.y);
+        this.addChild(b);
+    }
+
+    addPlayers(matchList:MatchPlayer[]){
         this._bubbleAIList = [];
         this._delBubbleList=[];
         this._bubbleIconMap= new Map<Bubble,Laya.Sprite>();
@@ -308,7 +300,7 @@ export class GameMap extends Laya.Sprite{
             let posY = Bubble.InitSize+ Math.floor(Math.random()*(this._boundary.y-2*Bubble.InitSize));
             let rotation = Math.floor(Math.random()*360)
             let ai = BubbleFactory.Create(Bubble.InitSize,idx,true);
-            ai.bubbleName = `路人${i}号`;
+            ai.bubbleName = matchList[i].name;
             ai.bubbleRotation = rotation;
             ai.pos(posX,posY);
             ai.setMoveBoundary(this._boundary.x,this._boundary.y);
@@ -321,7 +313,31 @@ export class GameMap extends Laya.Sprite{
             icon.graphics.drawCircle(icon.width/2,icon.height/2,icon.width/2,Bubble.SKIN_LIST[idx]);
             icon.graphics.fillText(`${i+1}`,icon.width/2,3,'14px Arial','#000000','center');
             this._bubbleIconMap.set(ai,icon);
+            icon.visible=false;
+            this.addChild(icon);
         }
+    }
+
+
+    /**
+     * 回收当前地图所有泡泡和障碍物
+     */
+    recycleObjects(){
+        for(let i=0;i<this._bubbleAIList.length;++i){
+            let b = this._bubbleAIList[i];
+            if(b.isAlive){
+                b.State = BubbleState.DEAD;
+            }
+        }
+        this._bubbleAIList = null;
+        if(this._bubbleHero.isAlive){
+            this._bubbleHero.State = BubbleState.DEAD;
+        }
+        this._bubbleHero =null;
+        for(let i=0;i<this._obstacleList.length;++i){
+            ObstacleFactory.Recycle(this._obstacleList[i]);
+        }
+        this._obstacleList=null;
     }
 
     initObstacles(){
@@ -340,6 +356,14 @@ export class GameMap extends Laya.Sprite{
             this._obsLayer.addChild(obs);
         }
         this.addChild(this._obsLayer);
+    }
+
+    hideObstacles(){
+        this._obsLayer.visible=false;
+    }
+
+    showObstacles(){
+        this._obsLayer.visible=true;
     }
 
     private drawBg(){
@@ -363,7 +387,6 @@ export class GameMap extends Laya.Sprite{
     }
 
     onDestroy(){
-        GameMap._instance = null;
     }
 
 }

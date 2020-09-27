@@ -7,12 +7,18 @@ export module ui.bubble {
     export class GameRenderUI extends Laya.View {
 		public labelTotalScore:Laya.Label;
 		public labelTime:Laya.Label;
+		public boxList:Laya.Box;
 		public img_bgRankList:Laya.Image;
 		public rankList:Laya.List;
-		public imgKill:Laya.Image;
+		public groupKill:Laya.Image;
 		public labelSrc:Laya.Label;
 		public labelDst:Laya.Label;
-        public static  uiView:any ={"type":"View","props":{"width":720,"height":67},"compId":2,"child":[{"type":"Image","props":{"skin":"gameSkin/img_bg1.png","centerY":0,"centerX":-194,"sizeGrid":"20,25,20,25"},"compId":3,"child":[{"type":"Label","props":{"var":"labelTotalScore","text":"得分:0","fontSize":26,"color":"#ffffff","centerY":0,"centerX":0},"compId":5}]},{"type":"Image","props":{"skin":"gameSkin/img_bg1.png","centerY":0,"centerX":35,"sizeGrid":"20,25,20,25"},"compId":4,"child":[{"type":"Label","props":{"y":10,"x":-125,"var":"labelTime","text":"02:59","fontSize":26,"color":"#ffffff","centerY":0,"centerX":0},"compId":6}]},{"type":"Box","props":{"y":80,"width":196,"right":10,"height":280},"compId":15,"child":[{"type":"Image","props":{"var":"img_bgRankList","skin":"gameSkin/img_bg2.png","right":0,"left":0,"height":280,"sizeGrid":"10,10,10,10"},"compId":7},{"type":"List","props":{"y":10,"var":"rankList","spaceY":5,"right":0,"repeatY":1,"repeatX":1,"left":0},"compId":8}]},{"type":"Image","props":{"var":"imgKill","top":20,"skin":"gameSkin/img_bgKill.png","centerX":0},"compId":16,"child":[{"type":"Label","props":{"y":109,"x":217,"width":103,"var":"labelSrc","text":"XXX","height":28,"fontSize":28,"color":"#ffffff"},"compId":17},{"type":"Label","props":{"y":167,"x":287,"width":163,"var":"labelDst","text":"XXX","height":28,"fontSize":28,"color":"#ffffff","align":"right"},"compId":18},{"type":"Image","props":{"y":111,"x":273.013671875,"skin":"gameSkin/img_txtEat.png"},"compId":19}]}],"loadList":["gameSkin/img_bg1.png","gameSkin/img_bg2.png","gameSkin/img_bgKill.png","gameSkin/img_txtEat.png"],"loadList3D":[]};
+		public groupMatch:Laya.Image;
+		public matchBox1:Laya.HBox;
+		public matchBox2:Laya.HBox;
+		public progress:Laya.ProgressBar;
+		public labelProgress:Laya.Label;
+        public static  uiView:any ={"type":"View","props":{"width":720,"height":1280},"compId":2,"child":[{"type":"Image","props":{"top":20,"skin":"gameSkin/img_bg1.png","centerX":-194,"sizeGrid":"20,25,20,25"},"compId":3,"child":[{"type":"Label","props":{"var":"labelTotalScore","text":"得分:0","fontSize":26,"color":"#ffffff","centerY":0,"centerX":0},"compId":5}]},{"type":"Image","props":{"top":20,"skin":"gameSkin/img_bg1.png","centerX":35,"sizeGrid":"20,25,20,25"},"compId":4,"child":[{"type":"Label","props":{"y":10,"x":-125,"var":"labelTime","text":"02:59","fontSize":26,"color":"#ffffff","centerY":0,"centerX":0},"compId":6}]},{"type":"Box","props":{"y":80,"width":196,"var":"boxList","right":10,"height":280},"compId":15,"child":[{"type":"Image","props":{"var":"img_bgRankList","skin":"gameSkin/img_bg2.png","right":0,"left":0,"height":280,"sizeGrid":"10,10,10,10"},"compId":7},{"type":"List","props":{"y":10,"var":"rankList","spaceY":5,"right":0,"repeatY":1,"repeatX":1,"left":0},"compId":8}]},{"type":"Image","props":{"var":"groupKill","top":20,"skin":"gameSkin/img_bgKill.png","centerX":0},"compId":16,"child":[{"type":"Label","props":{"y":109,"x":217,"width":103,"var":"labelSrc","text":"XXX","height":28,"fontSize":28,"color":"#ffffff"},"compId":17},{"type":"Label","props":{"y":167,"x":287,"width":163,"var":"labelDst","text":"XXX","height":28,"fontSize":28,"color":"#ffffff","align":"right"},"compId":18},{"type":"Image","props":{"y":111,"x":273.013671875,"skin":"gameSkin/img_txtEat.png"},"compId":19}]},{"type":"Image","props":{"var":"groupMatch","top":0,"skin":"loadSkin/img_blank.png","right":0,"left":0,"bottom":0,"sizeGrid":"4,4,4,4"},"compId":20,"child":[{"type":"Image","props":{"skin":"gameSkin/img_txtMatch.png","centerY":-50,"centerX":0},"compId":23},{"type":"HBox","props":{"var":"matchBox1","space":15,"centerY":150,"centerX":0,"align":"middle"},"compId":25},{"type":"HBox","props":{"x":360,"var":"matchBox2","space":15,"centerY":270,"centerX":0,"align":"middle"},"compId":30},{"type":"ProgressBar","props":{"y":1023,"width":476,"var":"progress","skin":"loadSkin/progress.png","height":35,"centerY":400,"centerX":0},"compId":22},{"type":"Label","props":{"var":"labelProgress","text":"已匹配","fontSize":28,"color":"#ffffff","centerY":447,"centerX":0},"compId":33}]}],"loadList":["gameSkin/img_bg1.png","gameSkin/img_bg2.png","gameSkin/img_bgKill.png","gameSkin/img_txtEat.png","loadSkin/img_blank.png","gameSkin/img_txtMatch.png","loadSkin/progress.png"],"loadList3D":[]};
         constructor(){ super()}
         createChildren():void {
             super.createChildren();
@@ -21,14 +27,15 @@ export module ui.bubble {
     }
     REG("ui.bubble.GameRenderUI",GameRenderUI);
     export class GameResultRenderUI extends Laya.View {
+		public uiGroup:Laya.Image;
 		public img_star:Laya.Image;
 		public labelRank:Laya.Label;
 		public boxHtmlTxt:Laya.Box;
 		public htmlTxt:laya.html.dom.HTMLDivElement;
 		public labelScore:Laya.Label;
-		public labelEnergy:Laya.Label;
 		public btnGet:Laya.Image;
-        public static  uiView:any ={"type":"View","props":{"width":720,"mouseEnabled":true,"height":1280},"compId":2,"child":[{"type":"Image","props":{"top":0,"skin":"gameSkin/img_blank.png","right":0,"left":0,"bottom":0,"sizeGrid":"4,4,4,4"},"compId":16},{"type":"Box","props":{"width":500,"height":450,"centerY":-320,"centerX":0},"compId":31,"child":[{"type":"Image","props":{"y":213.5,"x":251,"var":"img_star","skin":"gameSkin/img_star.png","rotation":0,"centerX":0,"anchorY":0.5,"anchorX":0.5},"compId":17},{"type":"Image","props":{"y":160.5,"x":-109,"skin":"gameSkin/img_bgTitle.png","centerX":0},"compId":18},{"type":"Label","props":{"y":180.5,"x":-109,"var":"labelRank","text":"排名","fontSize":45,"color":"#ffffff","centerX":0},"compId":28}]},{"type":"Box","props":{"width":600,"var":"boxHtmlTxt","height":100,"centerY":-122,"centerX":0},"compId":20,"child":[{"type":"HTMLDivElement","props":{"x":0,"width":218,"var":"htmlTxt","text":"被XXX吃掉了","height":60,"fontSize":32,"centerY":-159,"runtime":"laya.html.dom.HTMLDivElement"},"compId":19}]},{"type":"Label","props":{"var":"labelScore","text":"积分: 123","fontSize":45,"color":"#ffffff","centerY":24,"centerX":0},"compId":21},{"type":"Image","props":{"skin":"gameSkin/img_energy.png","centerY":200,"centerX":-154},"compId":23,"child":[{"type":"Label","props":{"y":-5,"x":33,"var":"labelEnergy","text":"123","fontSize":45,"color":"#ffffff"},"compId":22}]},{"type":"Image","props":{"x":455,"var":"btnGet","skin":"gameSkin/img_btnGet.png","centerY":200,"anchorY":0.5,"anchorX":0.5},"compId":24,"child":[{"type":"Script","props":{"runtime":"common/ScaleButton.ts"},"compId":30}]}],"loadList":["gameSkin/img_blank.png","gameSkin/img_star.png","gameSkin/img_bgTitle.png","gameSkin/img_energy.png","gameSkin/img_btnGet.png"],"loadList3D":[]};
+		public labelEnergy:Laya.Label;
+        public static  uiView:any ={"type":"View","props":{"width":720,"mouseEnabled":true,"height":1280},"compId":2,"child":[{"type":"Image","props":{"var":"uiGroup","top":0,"skin":"gameSkin/img_blank.png","right":0,"left":0,"bottom":0,"sizeGrid":"4,4,4,4"},"compId":16,"child":[{"type":"Box","props":{"y":95,"x":110,"width":500,"height":450,"centerY":-320,"centerX":0},"compId":31,"child":[{"type":"Image","props":{"y":213.5,"x":251,"var":"img_star","skin":"gameSkin/img_star.png","rotation":0,"centerX":0,"anchorY":0.5,"anchorX":0.5},"compId":17},{"type":"Image","props":{"y":160.5,"x":-109,"skin":"gameSkin/img_bgTitle.png","centerX":0},"compId":18},{"type":"Label","props":{"y":180.5,"x":-109,"var":"labelRank","text":"排名","fontSize":45,"color":"#ffffff","centerX":0},"compId":28}]},{"type":"Box","props":{"y":468,"x":60,"width":600,"var":"boxHtmlTxt","height":100,"centerY":-122,"centerX":0},"compId":20,"child":[{"type":"HTMLDivElement","props":{"x":0,"width":218,"var":"htmlTxt","text":"被XXX吃掉了","height":60,"fontSize":32,"centerY":-159,"runtime":"laya.html.dom.HTMLDivElement"},"compId":19}]},{"type":"Label","props":{"y":642,"x":265,"var":"labelScore","text":"积分: 123","fontSize":45,"color":"#ffffff","centerY":24,"centerX":0},"compId":21},{"type":"Image","props":{"y":840,"var":"btnGet","skin":"gameSkin/img_btnGet.png","centerY":200,"centerX":78,"anchorY":0.5,"anchorX":0.5},"compId":24,"child":[{"type":"Script","props":{"runtime":"common/ScaleButton.ts"},"compId":30}]},{"type":"Box","props":{"width":84,"height":70,"centerY":200,"centerX":-114},"compId":32,"child":[{"type":"Label","props":{"var":"labelEnergy","text":"0","right":0,"fontSize":45,"color":"#ffffff","centerY":0,"align":"right"},"compId":22,"child":[{"type":"Image","props":{"y":6,"x":-34,"skin":"gameSkin/img_energy.png","centerY":0},"compId":23}]}]}]}],"loadList":["gameSkin/img_blank.png","gameSkin/img_star.png","gameSkin/img_bgTitle.png","gameSkin/img_btnGet.png","gameSkin/img_energy.png"],"loadList3D":[]};
         constructor(){ super()}
         createChildren():void {
             super.createChildren();
@@ -36,6 +43,17 @@ export module ui.bubble {
         }
     }
     REG("ui.bubble.GameResultRenderUI",GameResultRenderUI);
+    export class HeadRenderUI extends Laya.View {
+		public imgHead:Laya.Image;
+		public labelName:Laya.Label;
+        public static  uiView:any ={"type":"View","props":{"width":60,"height":60},"compId":2,"child":[{"type":"Image","props":{"var":"imgHead","top":0,"skin":"gameSkin/img_head.jpg","right":0,"left":0,"bottom":0},"compId":3,"child":[{"type":"Sprite","props":{"y":28,"x":28,"renderType":"mask"},"compId":4,"child":[{"type":"Circle","props":{"radius":26,"lineWidth":1,"fillColor":"#ff0000"},"compId":5}]}]},{"type":"Label","props":{"var":"labelName","text":"名字","fontSize":18,"color":"#ffffff","centerX":0,"bottom":-20},"compId":6}],"loadList":["gameSkin/img_head.jpg"],"loadList3D":[]};
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.createView(HeadRenderUI.uiView);
+        }
+    }
+    REG("ui.bubble.HeadRenderUI",HeadRenderUI);
     export class RankItemRenderUI extends Laya.View {
 		public labelName:Laya.Label;
 		public labelScore:Laya.Label;

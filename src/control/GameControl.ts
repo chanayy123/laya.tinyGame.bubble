@@ -1,5 +1,6 @@
 import { GameUtil } from "../common/GameUtil";
 import SoundHelper from "../common/SoundHelper";
+import MatchData, { MatchPlayer } from "../data/MatchData";
 import { ResData } from "../data/ResData";
 import UserData from "../data/UserData";
 import Bubble, { BubbleFactory } from "../object/Bubble";
@@ -37,18 +38,12 @@ export default class GameControl extends Laya.Script {
     onEnable(): void {
         Laya.stage.on(Laya.Event.MOUSE_DOWN,this,this.onTouchDown);
         Laya.stage.on(Laya.Event.MOUSE_UP,this,this.onTouchUp);
-        Laya.stage.on(Laya.Event.RESIZE,this,this.onResize);
-        this.gameState = GameState.START;
+        this.gameState = GameState.MATCH;
     }
 
     onDisable(): void {
         Laya.stage.off(Laya.Event.MOUSE_DOWN,this,this.onTouchDown);
         Laya.stage.off(Laya.Event.MOUSE_UP,this,this.onTouchUp);
-        Laya.stage.off(Laya.Event.RESIZE,this,this.onResize);
-    }
-
-    onResize():void{
-        console.log("舞台宽高: "+Laya.stage.width+" "+Laya.stage.height);
     }
 
     onMouseMove():void{
@@ -88,25 +83,30 @@ export default class GameControl extends Laya.Script {
     onUpdate():void{
         if(this.gameState != GameState.START) return;
         this._map.update();
-    } 
+    }
+
+    onDestroy(){
+        this._map.recycleObjects();
+        this._map=null;
+        this._gameUI =null;
+        this._gameResultUI=null;
+        this._emotionAnim =null;
+    }
 
     initMap(){
-        this._map = GameMap.Instance;
+        this._map = new GameMap();
         this._map.init(GameMap.MAP_WIDTH,GameMap.MAP_HEIGHT);
         this.owner.addChildAt(this._map,0);
-        this._bubbleHero = BubbleFactory.Create(Bubble.InitSize,0,false);
-        this._bubbleHero.bubbleName = "我";
-        this._bubbleHero.pos(Laya.stage.width/2,Laya.stage.height/2);      
-        this._map.addHero(this._bubbleHero);
         this._map.eatHandler = Laya.Handler.create(this,this.onEat,null,false);
         this._map.killHandler = Laya.Handler.create(this,this.onKill,null,false);
         this._map.updateRankHandler = Laya.Handler.create(this,this.onRefreshRankList,null,false);
+        this._map.hideObstacles();
     }
 
     initUI(){
         this._gameUI = this.owner.getChildByName("gameUI") as GameUI;
-        this._gameUI.showTotalScore(this._bubbleHero.eatBeans);
-        this._gameUI.showLeftTime(this._leftTime);
+        this._gameUI.showTotalScore(0);
+        this._gameUI.showLeftTime(0);
         this._gameResultUI = this.owner.getChildByName("gameResultUI") as GameResultUI;
         this._gameResultUI.hide();
     }
@@ -121,7 +121,6 @@ export default class GameControl extends Laya.Script {
         if(dst == this._bubbleHero){
             this.gameState = GameState.END;
         }else if(src == this._bubbleHero){
-            this._gameUI.showKillTip(src.name,dst.name);
             this.playEmotionAnim();
         }else{
             this._gameUI.showKillTip(src.name,dst.name);
@@ -139,8 +138,9 @@ export default class GameControl extends Laya.Script {
         }
     }
 
-    startMatch(){
-        console.log("开始匹配玩家");
+    async startMatch(){
+        await this._gameUI.showMatch(MatchData.Instance.matchList);
+        this.gameState = GameState.START;
     }
 
     async startCountDown(){
@@ -185,6 +185,12 @@ export default class GameControl extends Laya.Script {
         if(now == GameState.MATCH){
             this.startMatch();
         }else if(now == GameState.START){
+            this._bubbleHero = BubbleFactory.Create(Bubble.InitSize,0,false);
+            this._bubbleHero.bubbleName = "我";
+            this._bubbleHero.pos(Laya.stage.width/2,Laya.stage.height/2);      
+            this._map.addHero(this._bubbleHero);
+            this._map.addPlayers(MatchData.Instance.matchList);
+            this._map.showObstacles();
             this.startCountDown();
         }else if(now == GameState.END){
             this.showGameResult();
@@ -202,17 +208,16 @@ export default class GameControl extends Laya.Script {
 
     private onLoadAnimComplete(){
         let bound = this._emotionAnim.getGraphicBounds();
-        this.owner.addChild(this._emotionAnim); 
+        this._emotionAnim.visible=true;
         this._emotionAnim.pivot(bound.x+bound.width/2,bound.y+bound.height/2)
         this._emotionAnim.pos(Laya.stage.width/2,100);
         this._emotionAnim.autoPlay=true;
         Laya.timer.once(1500,this,this.stopEmotionAnim)
     }
 
-
     private stopEmotionAnim(){
         this._emotionAnim.clear();
-        this._emotionAnim.removeSelf();
+        this._emotionAnim.visible=false;
     }
 
 }

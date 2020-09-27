@@ -1,4 +1,5 @@
 import { GameUtil } from "../common/GameUtil";
+import Resize from "../common/Resize";
 import SceneManager from "../common/SceneManager";
 import SoundHelper from "../common/SoundHelper";
 import { ResData } from "../data/ResData";
@@ -6,18 +7,23 @@ import { ResData } from "../data/ResData";
 export default class LaunchControl extends Laya.Script {
     public static MinLoadTime:number = 1000;
     private _progress:Laya.ProgressBar;
+    private _group:Laya.Sprite;
     constructor() {
          super(); 
     }
     
     onAwake(){
         (this.owner as Laya.Scene).autoDestroyAtClosed=true;
-        this._progress = this.owner.getChildByName("progress") as Laya.ProgressBar;
+        this._group = this.owner.getChildByName("uiGroup") as Laya.Sprite;
+        this._progress = this._group.getChildByName("progress") as Laya.ProgressBar;
     }
 
     onEnable(): void {
         this._progress.value =0;
         SceneManager.Instance.open(ResData.RES_SCENE_SELECT,GameUtil.wait(LaunchControl.MinLoadTime),false,true,Laya.Handler.create(this,this.onProgress,null,false));
+    }
+
+    onDisable(): void {
     }
 
     onProgress(value:number){
@@ -29,6 +35,7 @@ export default class LaunchControl extends Laya.Script {
         SoundHelper.playMusic(ResData.RES_SOUND_BG,true);
     }
 
-    onDisable(): void {
+    onResize(){
+        this._group.scale(Resize.minScale,Resize.minScale);
     }
 }

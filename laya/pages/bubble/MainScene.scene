@@ -6,7 +6,7 @@
     "searchKey":"Scene",
     "props":{"width":720,"sceneColor":"#000000","height":1280},
     "nodeParent":-1,
-    "maxID":11,
+    "maxID":13,
     "label":"Scene",
     "isOpen":true,
     "isDirectory":true,
@@ -19,30 +19,64 @@
             "type":"UIView",
             "source":"bubble/GameRender.scene",
             "searchKey":"UIView,gameUI",
-            "props":{"runtime":"view/GameUI.ts","name":"gameUI"},
+            "props":{"y":0,"x":0,"top":0,"runtime":"view/GameUI.ts","right":0,"name":"gameUI","left":0,"bottom":0},
             "nodeParent":2,
             "label":"gameUI",
-            "isDirectory":false,
+            "isOpen":false,
+            "isDirectory":true,
             "isAniNode":true,
-            "hasChild":false,
+            "hasChild":true,
             "compId":7,
             "child":[
-                ]
+                {
+                    "type":"Script",
+                    "switchAble":true,
+                    "source":"src/common/Resize.ts",
+                    "searchKey":"Script,Resize",
+                    "removeAble":true,
+                    "props":{"isReCalcScale":"false","isFitStageSize":"false"},
+                    "nodeParent":7,
+                    "label":"Resize",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":11,
+                    "child":[
+                        ]
+                }],
+            "$HIDDEN":false
         },
         {
             "x":15,
             "type":"UIView",
             "source":"bubble/GameResultRender.scene",
             "searchKey":"UIView,gameResultUI",
-            "props":{"top":0,"runtime":"view/GameResultUI.ts","right":0,"name":"gameResultUI","left":0,"bottom":0},
+            "props":{"y":0,"x":0,"top":0,"runtime":"view/GameResultUI.ts","right":0,"name":"gameResultUI","left":0,"bottom":0},
             "nodeParent":2,
             "label":"gameResultUI",
-            "isDirectory":false,
+            "isOpen":false,
+            "isDirectory":true,
             "isAniNode":true,
-            "hasChild":false,
+            "hasChild":true,
             "compId":8,
             "child":[
-                ]
+                {
+                    "type":"Script",
+                    "switchAble":true,
+                    "source":"src/common/Resize.ts",
+                    "searchKey":"Script,Resize",
+                    "removeAble":true,
+                    "props":{"isReCalcScale":"false","isFitStageSize":"false"},
+                    "nodeParent":8,
+                    "label":"Resize",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":12,
+                    "child":[
+                        ]
+                }],
+            "$HIDDEN":false
         },
         {
             "x":15,
@@ -86,5 +120,6 @@
             "id":1,
             "frameRate":24,
             "action":0
-        }]
+        }],
+    "$HIDDEN":false
 }
